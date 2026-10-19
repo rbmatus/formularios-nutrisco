@@ -1,1 +1,284 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Formularios pendientes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
 
+  <header class="cabecera">
+    <div class="contenedor cabecera__interior">
+      <p class="cabecera__cliente">Cliente Nutrisco <span id="periodo"></span></p>
+      <h1 class="cabecera__titulo">Formularios pendientes<br>de justificar</h1>
+      <svg class="pincelada" viewBox="0 0 420 26" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M4 16 C 60 6, 130 4, 210 9 S 360 20, 416 8 L 414 15 C 360 26, 290 22, 210 17 S 70 12, 6 22 Z"/>
+      </svg>
+      <dl class="resumen">
+        <div><dt>Faltantes</dt><dd id="totalFaltantes">0</dd></div>
+        <div><dt>Ya justificados</dt><dd id="totalJustificados">0</dd></div>
+        <div class="resumen__alerta"><dt>Por responder</dt><dd id="totalPendientes">0</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <main class="contenedor">
+
+    <section class="bloque" aria-labelledby="tituloSupervisores">
+      <div class="bloque__encabezado">
+        <h2 id="tituloSupervisores">Busca tu nombre</h2>
+        <p>Haz clic en tu ficha para ver los formularios de tu equipo y dejar la justificación.</p>
+      </div>
+      <div class="supervisores" id="supervisores"></div>
+    </section>
+
+    <section class="bloque detalle" id="detalle" hidden aria-labelledby="tituloDetalle">
+      <div class="detalle__barra">
+        <div>
+          <h2 id="tituloDetalle"></h2>
+          <p id="subtituloDetalle" class="detalle__sub"></p>
+        </div>
+        <label class="buscador">
+          <span class="visualmente-oculto">Buscar mercaderista o local</span>
+          <input type="search" id="buscador" placeholder="Buscar mercaderista o local">
+        </label>
+      </div>
+
+      <div class="tabla-envoltura">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th scope="col">Fecha</th>
+              <th scope="col">Formulario</th>
+              <th scope="col">Mercaderista</th>
+              <th scope="col">Local</th>
+              <th scope="col">Permiso / justificación</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpoTabla"></tbody>
+        </table>
+        <p class="vacio" id="vacio" hidden>No hay formularios que coincidan con la búsqueda.</p>
+      </div>
+
+      <div class="acciones">
+        <p class="acciones__estado" id="estadoEnvio">Completa la columna de permiso y envía tu respuesta.</p>
+        <div class="acciones__botones">
+          <button type="button" class="boton boton--secundario" id="btnCopiar">Copiar respuesta</button>
+          <button type="button" class="boton boton--secundario" id="btnCsv">Descargar Excel (CSV)</button>
+          <button type="button" class="boton boton--principal" id="btnCorreo">Enviar por correo</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="pie contenedor">
+    <p>Lo que escribes se guarda en este navegador hasta que lo envíes. Si tienes dudas, responde al correo de solicitud.</p>
+  </footer>
+
+  <script src="datos.js"></script>
+  <script>
+    (function () {
+      // ---------- Utilidades ----------
+      const $ = (id) => document.getElementById(id);
+      const idRegistro = (r) => [r.fecha, r.formulario, r.mercaderista, r.local].join("|");
+      const CLAVE = "justificaciones-" + PERIODO;
+
+      function leerBorrador() {
+        try { return JSON.parse(localStorage.getItem(CLAVE)) || {}; } catch (e) { return {}; }
+      }
+      function guardarBorrador(datos) {
+        try { localStorage.setItem(CLAVE, JSON.stringify(datos)); } catch (e) { /* sin almacenamiento */ }
+      }
+
+      const borrador = leerBorrador();
+      let supervisorActivo = null;
+
+      // Valor vigente de una fila: lo escrito por el supervisor o lo que trae datos.js
+      function valor(r) {
+        const b = borrador[idRegistro(r)] || {};
+        return {
+          permiso: b.permiso !== undefined ? b.permiso : (r.permiso || ""),
+          comentario: b.comentario || ""
+        };
+      }
+
+      function escapar(t) {
+        return String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      }
+
+      // ---------- Resumen general ----------
+      function pintarResumen() {
+        const justificados = REGISTROS.filter((r) => valor(r).permiso).length;
+        $("periodo").textContent = PERIODO;
+        $("totalFaltantes").textContent = REGISTROS.length;
+        $("totalJustificados").textContent = justificados;
+        $("totalPendientes").textContent = REGISTROS.length - justificados;
+      }
+
+      // ---------- Fichas de supervisores ----------
+      function pintarSupervisores() {
+        const nombres = Array.from(new Set([...SUPERVISORES, ...REGISTROS.map((r) => r.supervisor)]));
+        const contenedor = $("supervisores");
+        contenedor.innerHTML = "";
+
+        nombres
+          .map((nombre) => {
+            const filas = REGISTROS.filter((r) => r.supervisor === nombre);
+            const listos = filas.filter((r) => valor(r).permiso).length;
+            return { nombre, total: filas.length, listos, pendientes: filas.length - listos };
+          })
+          .sort((a, b) => b.pendientes - a.pendientes || a.nombre.localeCompare(b.nombre))
+          .forEach((s) => {
+            const pct = s.total ? Math.round((s.listos / s.total) * 100) : 100;
+            const estado = s.total === 0 ? "aldia" : s.pendientes === 0 ? "listo" : "pendiente";
+            const texto =
+              s.total === 0 ? "Sin formularios faltantes"
+              : s.pendientes === 0 ? `${s.total} de ${s.total} justificados`
+              : `${s.pendientes} por responder de ${s.total}`;
+
+            const ficha = document.createElement("button");
+            ficha.type = "button";
+            ficha.className = `ficha ficha--${estado}`;
+            ficha.setAttribute("aria-pressed", supervisorActivo === s.nombre ? "true" : "false");
+            ficha.disabled = s.total === 0;
+            ficha.innerHTML = `
+              <span class="ficha__numero">${s.pendientes === 0 ? "✓" : s.pendientes}</span>
+              <span class="ficha__nombre">${escapar(s.nombre)}</span>
+              <span class="ficha__texto">${texto}</span>
+              <span class="ficha__barra"><span style="width:${pct}%"></span></span>`;
+            ficha.addEventListener("click", () => abrirDetalle(s.nombre));
+            contenedor.appendChild(ficha);
+          });
+      }
+
+      // ---------- Detalle del supervisor ----------
+      function abrirDetalle(nombre) {
+        supervisorActivo = nombre;
+        $("buscador").value = "";
+        $("detalle").hidden = false;
+        pintarSupervisores();
+        pintarDetalle();
+        $("detalle").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      }
+
+      function filasActivas() {
+        return REGISTROS.filter((r) => r.supervisor === supervisorActivo);
+      }
+
+      function pintarDetalle() {
+        const filas = filasActivas();
+        const filtro = $("buscador").value.trim().toLowerCase();
+        const visibles = filas.filter((r) =>
+          !filtro || (r.mercaderista + " " + r.local).toLowerCase().includes(filtro));
+
+        const listos = filas.filter((r) => valor(r).permiso).length;
+        $("tituloDetalle").textContent = supervisorActivo;
+        $("subtituloDetalle").textContent =
+          `${filas.length} formularios faltantes, ${filas.length - listos} sin justificar`;
+
+        const opciones = OPCIONES_PERMISO.map((o) => `<option>${escapar(o)}</option>`).join("");
+
+        $("cuerpoTabla").innerHTML = visibles.map((r) => {
+          const v = valor(r);
+          const id = escapar(idRegistro(r));
+          return `
+            <tr class="${v.permiso ? "fila--lista" : "fila--pendiente"}">
+              <td data-etiqueta="Fecha" class="celda-fecha">${escapar(r.fecha)}</td>
+              <td data-etiqueta="Formulario"><span class="etiqueta-form">${escapar(r.formulario)}</span></td>
+              <td data-etiqueta="Mercaderista">${escapar(r.mercaderista)}</td>
+              <td data-etiqueta="Local" class="celda-local">${escapar(r.local)}</td>
+              <td data-etiqueta="Permiso" class="celda-permiso">
+                <select data-id="${id}" data-campo="permiso" aria-label="Permiso para ${escapar(r.mercaderista)}, ${escapar(r.fecha)}">
+                  <option value="">Elegir justificación…</option>${opciones}
+                </select>
+                <input type="text" data-id="${id}" data-campo="comentario" placeholder="Comentario (opcional)"
+                  value="${escapar(v.comentario)}" aria-label="Comentario">
+              </td>
+            </tr>`;
+        }).join("");
+
+        // Marcar la opción guardada
+        $("cuerpoTabla").querySelectorAll("select").forEach((sel) => {
+          const r = filas.find((f) => idRegistro(f) === sel.dataset.id);
+          sel.value = valor(r).permiso;
+        });
+
+        $("vacio").hidden = visibles.length > 0;
+      }
+
+      // Guardar lo que escribe el supervisor
+      $("cuerpoTabla").addEventListener("input", (e) => {
+        const campo = e.target.dataset.campo;
+        if (!campo) return;
+        const id = e.target.dataset.id;
+        borrador[id] = Object.assign({}, borrador[id], { [campo]: e.target.value });
+        if (campo === "permiso") {
+          borrador[id].permiso = e.target.value;
+          e.target.closest("tr").className = e.target.value ? "fila--lista" : "fila--pendiente";
+          pintarResumen();
+          pintarSupervisores();
+          const filas = filasActivas();
+          const listos = filas.filter((r) => valor(r).permiso).length;
+          $("subtituloDetalle").textContent =
+            `${filas.length} formularios faltantes, ${filas.length - listos} sin justificar`;
+        }
+        guardarBorrador(borrador);
+      });
+
+      $("buscador").addEventListener("input", pintarDetalle);
+
+      // ---------- Respuesta del supervisor ----------
+      function textoRespuesta() {
+        const lineas = filasActivas().map((r) => {
+          const v = valor(r);
+          return `${r.fecha} | ${r.formulario} | ${r.mercaderista} | ${r.local} | ${v.permiso || "SIN JUSTIFICAR"}${v.comentario ? " | " + v.comentario : ""}`;
+        });
+        return `Justificaciones de ${supervisorActivo} (${PERIODO})\n\nFECHA | FORMULARIO | MERCADERISTA | LOCAL | PERMISO | COMENTARIO\n${lineas.join("\n")}`;
+      }
+
+      function avisar(mensaje) {
+        $("estadoEnvio").textContent = mensaje;
+      }
+
+      $("btnCopiar").addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(textoRespuesta());
+          avisar("Respuesta copiada. Pégala en un correo o en WhatsApp.");
+        } catch (e) {
+          avisar("No se pudo copiar automáticamente. Usa “Descargar Excel (CSV)”.");
+        }
+      });
+
+      $("btnCorreo").addEventListener("click", () => {
+        const asunto = `Justificación formularios faltantes - ${supervisorActivo} - ${PERIODO}`;
+        location.href = `mailto:${CORREO_DESTINO}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(textoRespuesta())}`;
+        avisar("Se abrió tu correo con la respuesta lista. Revísala y envíala.");
+      });
+
+      $("btnCsv").addEventListener("click", () => {
+        const celda = (t) => `"${String(t).replace(/"/g, '""')}"`;
+        const filas = filasActivas().map((r) => {
+          const v = valor(r);
+          return [r.fecha, r.formulario, r.mercaderista, r.local, r.supervisor, v.permiso, v.comentario].map(celda).join(";");
+        });
+        const csv = "\uFEFF" + ["FECHA;FORMULARIO;MERCADERISTA;LOCAL;SUPERVISOR;PERMISO;COMENTARIO", ...filas].join("\r\n");
+        const enlace = document.createElement("a");
+        enlace.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+        enlace.download = `justificaciones-${supervisorActivo.replace(/\s+/g, "-").toLowerCase()}.csv`;
+        enlace.click();
+        URL.revokeObjectURL(enlace.href);
+        avisar("Archivo descargado. Adjúntalo en tu respuesta.");
+      });
+
+      // ---------- Inicio ----------
+      pintarResumen();
+      pintarSupervisores();
+    })();
+  </script>
+</body>
+</html>
