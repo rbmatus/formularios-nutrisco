@@ -5,7 +5,7 @@
 
 :root {
   --naranjo: #EC651F;
-  --naranjo-oscuro: #B84A0F;   /* para texto naranjo sobre fondo claro */
+  --naranjo-oscuro: #B84A0F;   /* texto naranjo sobre fondo claro */
   --naranjo-tenue: #FDEDE3;
   --azul: #0F2F4D;
   --azul-medio: #1D4A72;
@@ -40,7 +40,7 @@ body {
 
 .contenedor {
   width: 100%;
-  max-width: 1180px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 0 16px;
 }
@@ -49,11 +49,13 @@ body {
   .contenedor { padding: 0 32px; }
 }
 
-h1, h2 {
+h1, h2, h3 {
   font-family: var(--fuente-titulo);
   margin: 0;
   line-height: 1.1;
 }
+
+button { font: inherit; color: inherit; }
 
 :focus-visible {
   outline: 3px solid var(--naranjo);
@@ -95,10 +97,9 @@ h1, h2 {
   font-size: clamp(2.1rem, 6vw, 3.6rem);
   font-weight: 800;
   letter-spacing: -0.02em;
-  max-width: 18ch;
 }
 
-/* El trazo de pincel: guiño a la gráfica de la marca */
+/* Trazo de pincel: guiño a la gráfica de la marca */
 .pincelada {
   display: block;
   width: min(420px, 80%);
@@ -115,19 +116,14 @@ h1, h2 {
   border-top: 1px solid #284B6C;
 }
 
-.resumen > div {
-  padding: 18px 16px 22px 0;
-}
+.resumen > div { padding: 18px 16px 22px 0; }
 
 .resumen > div + div {
   padding-left: 16px;
   border-left: 1px solid #284B6C;
 }
 
-.resumen dt {
-  font-size: 0.85rem;
-  color: #B9CADB;
-}
+.resumen dt { font-size: 0.85rem; color: #B9CADB; }
 
 .resumen dd {
   margin: 2px 0 0;
@@ -143,7 +139,14 @@ h1, h2 {
 
 .bloque { padding: 40px 0 8px; }
 
-.bloque__encabezado { margin-bottom: 20px; }
+.bloque__encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
 
 .bloque__encabezado h2,
 .detalle h2 {
@@ -155,14 +158,44 @@ h1, h2 {
 .bloque__encabezado p {
   margin: 6px 0 0;
   color: var(--gris);
-  max-width: 60ch;
 }
+
+/* ---------- Botones ---------- */
+
+.boton {
+  display: inline-block;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 99px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.boton--principal { background: var(--naranjo); color: #fff; }
+.boton--principal:hover { background: #D9561A; }
+
+.boton--contorno { background: var(--superficie); border-color: var(--linea); color: var(--azul); }
+.boton--contorno:hover { border-color: var(--azul-medio); }
+
+/* ---------- Aviso de carga ---------- */
+
+.aviso {
+  margin-top: 32px;
+  padding: 20px 24px;
+  background: var(--naranjo-tenue);
+  border-left: 4px solid var(--naranjo);
+  border-radius: var(--radio-m);
+}
+
+.aviso h2 { font-size: 1.2rem; color: var(--naranjo-oscuro); }
+.aviso p { margin: 6px 0 16px; max-width: 70ch; }
 
 /* ---------- Fichas de supervisores ---------- */
 
 .supervisores {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
 }
 
@@ -180,20 +213,16 @@ h1, h2 {
   background: var(--superficie);
   border: 1px solid var(--linea);
   border-radius: var(--radio-m);
-  font: inherit;
-  color: inherit;
   cursor: pointer;
   transition: border-color 0.15s, transform 0.15s;
 }
 
-.ficha:hover:not(:disabled) { border-color: var(--azul-medio); transform: translateY(-2px); }
+.ficha:hover { border-color: var(--azul-medio); transform: translateY(-2px); }
 
 .ficha[aria-pressed="true"] {
   border-color: var(--naranjo);
   box-shadow: inset 0 0 0 1px var(--naranjo);
 }
-
-.ficha:disabled { cursor: default; background: transparent; }
 
 .ficha__numero {
   grid-area: numero;
@@ -201,14 +230,15 @@ h1, h2 {
   font-size: 2.2rem;
   font-weight: 800;
   line-height: 1;
-  min-width: 1.4em;
+  min-width: 1.6em;
   text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .ficha__nombre { grid-area: nombre; font-weight: 600; line-height: 1.25; }
-
 .ficha__texto { grid-area: texto; font-size: 0.85rem; color: var(--gris); }
 
+/* La barra compara los pendientes de cada supervisor contra el que más tiene */
 .ficha__barra {
   grid-area: barra;
   height: 5px;
@@ -221,44 +251,122 @@ h1, h2 {
 .ficha__barra span {
   display: block;
   height: 100%;
-  background: var(--verde);
+  background: var(--naranjo);
   border-radius: inherit;
 }
 
 .ficha--pendiente .ficha__numero { color: var(--naranjo); }
 .ficha--listo .ficha__numero { color: var(--verde); }
-.ficha--aldia .ficha__numero { color: var(--gris); font-size: 1.6rem; }
-.ficha--aldia { opacity: 0.7; }
 
 /* ---------- Detalle ---------- */
 
 .detalle { padding-bottom: 32px; }
 
 .detalle__barra {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: end;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  padding-top: 8px;
+  margin-bottom: 20px;
+  padding-top: 24px;
   border-top: 3px solid var(--naranjo);
 }
 
-.detalle__barra h2 { margin-top: 16px; }
-
 .detalle__sub { margin: 4px 0 0; color: var(--gris); }
 
-.buscador input {
-  width: min(320px, 100%);
-  padding: 10px 14px;
+.detalle__cuerpo {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* Ranking por mercaderista */
+.ranking {
+  background: var(--superficie);
   border: 1px solid var(--linea);
+  border-radius: var(--radio-m);
+  padding: 16px 8px 8px;
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.ranking h3 {
+  font-size: 1rem;
+  color: var(--azul);
+  padding: 0 8px 10px;
+}
+
+.ranking ol { list-style: none; margin: 0; padding: 0; }
+
+.ranking button {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  width: 100%;
+  padding: 8px;
+  background: none;
+  border: 0;
   border-radius: var(--radio-s);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ranking button:hover { background: var(--azul-tenue); }
+
+.ranking__nombre { font-size: 0.9rem; line-height: 1.3; }
+.ranking__n { font-weight: 700; color: var(--naranjo-oscuro); font-variant-numeric: tabular-nums; }
+
+.ranking__barra {
+  grid-column: 1 / -1;
+  height: 4px;
+  background: var(--azul-tenue);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.ranking__barra span { display: block; height: 100%; background: var(--naranjo); }
+
+.ranking__vacio { padding: 8px; color: var(--gris); font-size: 0.9rem; }
+
+/* Filtros */
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.segmentos {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--azul-tenue);
+  border-radius: 99px;
+}
+
+.segmentos button {
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 99px;
+  background: transparent;
+  color: var(--azul);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segmentos button[aria-pressed="true"] { background: var(--azul); color: #fff; }
+
+.buscador input {
+  width: min(300px, 100%);
+  padding: 9px 14px;
+  border: 1px solid var(--linea);
+  border-radius: 99px;
   background: var(--superficie);
   font: inherit;
   color: inherit;
 }
 
+/* Tabla */
 .tabla-envoltura {
   background: var(--superficie);
   border: 1px solid var(--linea);
@@ -269,7 +377,7 @@ h1, h2 {
 .tabla {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
 }
 
 .tabla th {
@@ -278,22 +386,25 @@ h1, h2 {
   font-weight: 600;
   color: var(--gris);
   background: var(--azul-tenue);
-  padding: 12px 14px;
+  padding: 11px 12px;
 }
 
 .tabla td {
-  padding: 14px;
+  padding: 11px 12px;
   border-top: 1px solid var(--linea);
   vertical-align: top;
 }
 
 .fila--pendiente td:first-child { box-shadow: inset 4px 0 0 var(--naranjo); }
 .fila--lista td:first-child { box-shadow: inset 4px 0 0 var(--verde); }
-.fila--lista { background: #FAFDFB; }
 
 .celda-fecha { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
+.celda-local { color: var(--gris); }
+.sin-dato { font-style: italic; color: #8A96A3; }
 
-.celda-local { color: var(--gris); max-width: 260px; }
+/* La columna Supervisor solo se muestra en la vista "Todos" */
+.col-super { display: none; }
+.detalle--todos .col-super { display: table-cell; }
 
 .etiqueta-form {
   display: inline-block;
@@ -301,73 +412,35 @@ h1, h2 {
   border-radius: 99px;
   background: var(--naranjo-tenue);
   color: var(--naranjo-oscuro);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   white-space: nowrap;
 }
 
-.celda-permiso { min-width: 240px; }
-
-.celda-permiso select,
-.celda-permiso input {
-  display: block;
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--linea);
+.estado {
+  display: inline-block;
+  padding: 3px 10px;
   border-radius: var(--radio-s);
-  background: var(--superficie);
-  font: inherit;
-  font-size: 0.9rem;
-  color: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
-.celda-permiso input { margin-top: 6px; }
-
-.fila--pendiente select { border-color: var(--naranjo); }
-.fila--lista select { border-color: var(--verde); background: var(--verde-tenue); }
+.estado--pend { background: var(--naranjo); color: #fff; }
+.estado--ok { background: var(--verde-tenue); color: var(--verde); }
 
 .vacio { padding: 24px; margin: 0; color: var(--gris); }
-
-/* ---------- Acciones ---------- */
-
-.acciones {
-  position: sticky;
-  bottom: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 20px;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 16px;
-  padding: 14px 16px;
-  background: var(--azul);
-  color: #fff;
-  border-radius: var(--radio-m);
-}
-
-.acciones__estado { margin: 0; font-size: 0.9rem; color: #D3DFEA; }
-
-.acciones__botones { display: flex; flex-wrap: wrap; gap: 8px; }
-
-.boton {
-  padding: 10px 18px;
-  border: 1px solid transparent;
-  border-radius: 99px;
-  font: inherit;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-}
-
-.boton--principal { background: var(--naranjo); color: #fff; }
-.boton--principal:hover { background: #D9561A; }
-
-.boton--secundario { background: transparent; color: #fff; border-color: #4A6886; }
-.boton--secundario:hover { border-color: #fff; }
 
 /* ---------- Pie ---------- */
 
 .pie { padding-top: 24px; padding-bottom: 48px; color: var(--gris); font-size: 0.85rem; }
+
+/* ---------- Pantallas medianas ---------- */
+
+@media (max-width: 980px) {
+  .detalle__cuerpo { grid-template-columns: 1fr; }
+  .ranking { position: static; max-height: 320px; }
+}
 
 /* ---------- Celular: la tabla pasa a tarjetas ---------- */
 
@@ -377,7 +450,7 @@ h1, h2 {
   .tabla, .tabla tbody, .tabla tr, .tabla td { display: block; width: 100%; }
 
   .tabla tr {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     background: var(--superficie);
     border: 1px solid var(--linea);
     border-radius: var(--radio-m);
@@ -391,9 +464,9 @@ h1, h2 {
 
   .tabla td {
     display: grid;
-    grid-template-columns: 110px 1fr;
+    grid-template-columns: 100px 1fr;
     gap: 8px;
-    padding: 8px 14px;
+    padding: 6px 14px;
     border-top: 0;
   }
 
@@ -403,20 +476,28 @@ h1, h2 {
     color: var(--gris);
   }
 
-  .tabla td:first-child { padding-top: 14px; }
-  .celda-permiso { grid-template-columns: 1fr !important; padding-bottom: 14px !important; min-width: 0; }
-  .celda-local { max-width: none; }
+  .tabla td:first-child { padding-top: 12px; }
+  .tabla td:last-child { padding-bottom: 12px; }
+  .col-super { display: none !important; }
+  .detalle--todos td.col-super { display: grid !important; }
+
+  .supervisores { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .ficha {
+    padding: 12px;
+    column-gap: 10px;
+    grid-template-areas: "numero nombre" "texto texto" "barra barra";
+  }
+  .ficha__numero { font-size: 1.7rem; min-width: 1.2em; }
+  .ficha__texto { margin-top: 6px; }
 
   .resumen > div { padding-right: 8px; }
   .resumen > div + div { padding-left: 10px; }
 
-  .acciones { position: static; flex-direction: column; align-items: stretch; }
+  .buscador, .buscador input { width: 100%; }
+}
 
-  .supervisores { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .ficha { padding: 12px; column-gap: 10px; grid-template-areas: "numero nombre" "texto texto" "barra barra"; }
-  .ficha__numero { font-size: 1.7rem; min-width: 1.1em; }
-  .ficha__texto { margin-top: 6px; }
-  .acciones__botones .boton { flex: 1 1 auto; }
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
