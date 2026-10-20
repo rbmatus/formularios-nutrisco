@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Surtido canal tradicional</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="cabecera">
+    <div class="contenedor">
+      <nav class="menu" aria-label="Secciones del sitio">
+        <a href="index.html">Formularios pendientes</a>
+        <a href="surtido.html" aria-current="page">Surtido canal tradicional</a>
+      </nav>
+      <p class="cabecera__cliente">Cliente Nutrisco <span id="nota">Cargando datos…</span></p>
+      <h1 class="cabecera__titulo">Surtido canal tradicional</h1>
+      <svg class="pincelada" viewBox="0 0 420 26" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M4 16 C 60 6, 130 4, 210 9 S 360 20, 416 8 L 414 15 C 360 26, 290 22, 210 17 S 70 12, 6 22 Z"/>
+      </svg>
+      <p class="cabecera__frase" id="frase"></p>
+      <dl class="resumen resumen--4">
+        <div><dt>Salas</dt><dd id="kSalas">–</dd></div>
+        <div><dt>Productos</dt><dd id="kProductos">–</dd></div>
+        <div><dt>Surtidos</dt><dd id="kSurtidos">–</dd></div>
+        <div><dt>Asignaciones</dt><dd id="kAsignaciones">–</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <main class="contenedor">
+
+    <section class="aviso" id="aviso" hidden>
+      <h2>No se pudo cargar surtido.xlsx</h2>
+      <p id="avisoTexto"></p>
+      <label class="boton boton--principal">
+        Abrir el Excel desde mi computador
+        <input type="file" id="archivoLocal" accept=".xlsx,.xls" hidden>
+      </label>
+    </section>
+
+    <!-- ===== Ficha de la sala ===== -->
+    <section class="bloque" id="ficha" aria-labelledby="salaNombre" hidden>
+
+      <div class="selector">
+        <button type="button" class="selector__flecha" id="btnAnterior" aria-label="Sala anterior">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="combo">
+          <label for="buscaSala" class="visualmente-oculto">Buscar sala por nombre, cadena o Id</label>
+          <input id="buscaSala" type="search" autocomplete="off" placeholder="Busca una sala por nombre, cadena o Id"
+            role="combobox" aria-expanded="false" aria-controls="sugerencias" aria-autocomplete="list">
+          <ul id="sugerencias" class="combo__lista" role="listbox" hidden></ul>
+        </div>
+        <button type="button" class="selector__flecha" id="btnSiguiente" aria-label="Sala siguiente">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <span class="selector__posicion" id="posicion"></span>
+      </div>
+
+      <article class="ficha-sala">
+        <div class="ficha-sala__cabeza">
+          <div>
+            <p class="ficha-sala__meta">
+              <span class="etiqueta-cadena" id="salaCadena"></span>
+              <span id="salaId"></span>
+            </p>
+            <h2 id="salaNombre"></h2>
+          </div>
+          <button type="button" class="boton boton--contorno" id="btnCopiar">Copiar link de esta sala</button>
+        </div>
+
+        <div class="ficha-sala__datos">
+          <div class="dato">
+            <p><strong id="salaN"></strong> de <span id="salaTotal"></span> productos</p>
+            <span class="dato__barra" aria-hidden="true"><span id="salaBarra"></span></span>
+          </div>
+          <div class="dato">
+            <p><button type="button" class="enlace" id="salaSurtido"></button><span id="salaCompartido"></span></p>
+            <p class="dato__sub" id="salaSurtidoNombre"></p>
+          </div>
+        </div>
+
+        <div class="familias__barra">
+          <h3>Productos por familia</h3>
+          <label class="casilla">
+            <input type="checkbox" id="ocultarNoMedidos">
+            Ocultar los que no se miden
+          </label>
+        </div>
+        <p class="familias__ayuda">Pasa el mouse o toca un producto para ver su SKU. Los productos con borde punteado no se miden en esta sala.</p>
+        <div class="familias" id="familias"></div>
+      </article>
+    </section>
+
+    <!-- ===== Vistas secundarias ===== -->
+    <section class="bloque vistas" id="vistas" hidden>
+      <div class="pestanas" role="tablist" aria-label="Otras vistas">
+        <button type="button" role="tab" id="tabSalas" aria-selected="true" aria-controls="panelSalas">Todas las salas</button>
+        <button type="button" role="tab" id="tabMatriz" aria-selected="false" aria-controls="panelMatriz" tabindex="-1">Matriz de surtido</button>
+      </div>
+
+      <div role="tabpanel" id="panelSalas" aria-labelledby="tabSalas">
+        <div class="filtros">
+          <label class="buscador">
+            <span class="visualmente-oculto">Buscar sala</span>
+            <input type="search" id="filtroTexto" placeholder="Buscar sala o Id">
+          </label>
+          <label class="selector-cadena">
+            <span class="visualmente-oculto">Filtrar por cadena</span>
+            <select id="filtroCadena"></select>
+          </label>
+          <span class="filtros__conteo" id="conteoSalas"></span>
+        </div>
+        <div class="tabla-envoltura tabla-envoltura--scroll">
+          <table class="tabla tabla--salas">
+            <thead><tr id="cabeceraSalas"></tr></thead>
+            <tbody id="cuerpoSalas"></tbody>
+          </table>
+          <p class="vacio" id="vacioSalas" hidden>Ninguna sala coincide con el filtro.</p>
+        </div>
+      </div>
+
+      <div role="tabpanel" id="panelMatriz" aria-labelledby="tabMatriz" hidden>
+        <p class="matriz__ayuda">Cada columna es un surtido: un grupo de salas que miden exactamente los mismos productos. El punto indica que el producto se mide. La columna resaltada es el surtido de la sala seleccionada; haz clic en un encabezado para abrir una sala de ese surtido.</p>
+        <div class="matriz-envoltura">
+          <table class="matriz" id="matriz"></table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="pie contenedor">
+    <p>Para compartir una sala, ábrela y usa “Copiar link de esta sala”. El link abre la página directo en esa sala.</p>
+  </footer>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    /* ===== Configuración ===== */
+    const ARCHIVO_DATOS = "surtido.xlsx";
+    const CADENAS_EXCLUIDAS = ["Alvi"];   // cadenas que no se muestran; deja [] para mostrar todas
+
+    // Cadena: primer texto que aparezca en el nombre de la sala (en mayúsculas), en este orden
+    const REGLAS_CADENA = [
+      ["ALVI", "Alvi"], ["GANGA", "La Ganga"], ["TREBOL", "El Trébol"], ["TRÉBOL", "El Trébol"], ["CUGAT", "Cugat"],
+      ["LILY", "Lily"], ["ELTIT", "Eltit"], ["PROVIMAR", "Provimarket"], ["PROV 0", "Provimarket"], ["SUPER 9", "Super 9"],
+      ["SUPERMERCADOS 9", "Super 9"], ["ROMANINI", "Romanini"], ["PUNTO PRAT", "Punto Prat"], ["ZAMORA", "Zamora"],
+      ["CENCOCAL", "Cencocal"], ["LA FAMA", "La Fama"], ["VERSLUYS", "Versluys"], ["VERLUYS", "Versluys"],
+      ["SUPER OFERTA", "Super Oferta"], ["ITALIANOS", "Los Italianos"], ["BASILIO CORREA", "Basilio Correa"],
+      ["SUP O", "Sup O"], ["COLCHAGUINA", "La Colchagüina"], ["UNICO_", "Único"], ["TODO CARNE", "Todo Carne"]
+    ];
+    const SIN_CADENA = "Independiente";
+
+    // Familias en el orden en que se muestran (el número es su color en styles.css)
+    const FAMILIAS = ["San José conservas", "San José congelados", "Chips Flip", "Under Five",
+                      "Livemore", "Atom Fruit", "Cook Green", "Nuestra Cocina"];
+
+    function familiaDe(nombre) {
+      const u = nombre.toUpperCase();
+      if (u.includes("FLIP") || u.startsWith("CHIPS")) return "Chips Flip";
+      if (u.includes("LIVEMORE")) return "Livemore";
+      if (u.includes("ATOM")) return "Atom Fruit";
+      if (u.includes("UF") || u.includes("UNDER FIVE")) return "Under Five";
+      if (u.includes("NUESTRA COCINA")) return "Nuestra Cocina";
+      if (u.includes("FRUTA CONG")) return "Cook Green";
+      if (["CONG", "ONICE", "CROQUETA", "NUGGETS", "HAMB"].some((k) => u.includes(k))) return "San José congelados";
+      return "San José conservas";
+    }
+
+    function cadenaDe(nombre) {
+      const u = nombre.toUpperCase();
+      const regla = REGLAS_CADENA.find(([texto]) => u.includes(texto));
+      return regla ? regla[1] : SIN_CADENA;
+    }
+
+    (function () {
+      const $ = (id) => document.getElementById(id);
+      const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      const limpiar = (t) => String(t == null ? "" : t).replace(/ /g, " ").replace(/\s+/g, " ").trim();
+      const idTexto = (v) => limpiar(v).replace(/\.0+$/, "");
+      const normTitulo = (t) => String(t).normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+      const normBusqueda = (t) => String(t).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+      const miles = (n) => n.toLocaleString("es-CL");
+      const plural = (n, uno, varios) => `${miles(n)} ${n === 1 ? uno : varios}`;
+      const colorFam = (fam) => `var(--fam-${FAMILIAS.indexOf(fam) + 1})`;
+
+      let D = null;            // datos procesados
+      let salaActual = null;
+      let orden = { col: "sala", dir: 1 };
+
+      /* ================= Lectura del Excel ================= */
+
+      function filasDeHoja(libro, nombre) {
+        const clave = libro.SheetNames.find((n) => normTitulo(n) === normTitulo(nombre));
+        if (!clave) return [];
+        return XLSX.utils.sheet_to_json(libro.Sheets[clave], { raw: false, defval: "" }).map((fila) => {
+          const r = {};
+          Object.keys(fila).forEach((k) => { r[normTitulo(k)] = fila[k]; });
+          return r;
+        });
+      }
+
+      const valido = (t) => { const v = limpiar(t); return v && v.toLowerCase() !== "no encontrado" ? v : ""; };
+
+      function procesar(buffer) {
+        const libro = XLSX.read(buffer, { type: "array" });
+        const asignaciones = filasDeHoja(libro, "Asignaciones");
+        if (!asignaciones.length) throw new Error("El archivo no tiene la hoja Asignaciones.");
+
+        const maestroLocales = {};
+        filasDeHoja(libro, "Locales").forEach((r) => { maestroLocales[idTexto(r.IDLOCAL)] = limpiar(r.NOMBRELOCAL); });
+        const maestroElementos = {};
+        filasDeHoja(libro, "Elementos").forEach((r) => {
+          maestroElementos[idTexto(r.IDELEMENTO)] = { nombre: limpiar(r.NOMBREELEMENTO), sku: limpiar(r.CODSKU) };
+        });
+
+        const salas = new Map(), productos = new Map(), excluidas = new Set();
+        let asignacionesTotal = 0;
+
+        asignaciones.forEach((r) => {
+          const idL = idTexto(r.IDLOCAL), idE = idTexto(r.IDELEMENTO);
+          if (!idL || !idE) return;
+          const nombreSala = valido(r.NOMBRELOCAL) || maestroLocales[idL] || `Sala ${idL}`;
+          const cadena = cadenaDe(nombreSala);
+          if (CADENAS_EXCLUIDAS.includes(cadena)) { excluidas.add(idL); return; }
+
+          if (!salas.has(idL)) salas.set(idL, { id: idL, nombre: nombreSala, cadena, productos: new Set() });
+          const sala = salas.get(idL);
+          if (sala.productos.has(idE)) return;     // par repetido
+          sala.productos.add(idE);
+          asignacionesTotal++;
+
+          if (!productos.has(idE)) {
+            const maestro = maestroElementos[idE] || {};
+            const nombre = valido(r.NOMBREELEMENTO) || maestro.nombre || `Producto ${idE}`;
+            productos.set(idE, { id: idE, nombre, sku: maestro.sku || "", familia: familiaDe(nombre), salas: 0 });
+          }
+          productos.get(idE).salas++;
+        });
+
+        // Surtidos: salas con exactamente el mismo conjunto de productos
+        const grupos = new Map();
+        salas.forEach((s) => {
+          const clave = [...s.productos].sort().join("|");
+          if (!grupos.has(clave)) grupos.set(clave, { productos: s.productos, salas: [] });
+          grupos.get(clave).salas.push(s);
+        });
+        const surtidos = [...grupos.values()].map((g) => {
+          const cuenta = {};
+          g.salas.forEach((s) => { cuenta[s.cadena] = (cuenta[s.cadena] || 0) + 1; });
+          const cadenas = Object.entries(cuenta).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "es"));
+          const nombre = cadenas.length === 1 ? cadenas[0][0] : `${cadenas[0][0]} y ${cadenas.length - 1} más`;
+          return { productos: g.productos, salas: g.salas, cadenas, nombre };
+        }).sort((a, b) => b.salas.length - a.salas.length || b.productos.size - a.productos.size || a.nombre.localeCompare(b.nombre, "es"));
+        surtidos.forEach((s, i) => { s.numero = i + 1; s.salas.forEach((sala) => { sala.surtido = s; }); });
+
+        // Orden de navegación: por cadena y luego por nombre
+        const listaSalas = [...salas.values()].sort((a, b) =>
+          a.cadena.localeCompare(b.cadena, "es") || a.nombre.localeCompare(b.nombre, "es"));
+
+        // Familias presentes y productos por familia
+        const familias = FAMILIAS.map((f) => ({
+          nombre: f,
+          productos: [...productos.values()].filter((p) => p.familia === f).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"))
+        })).filter((f) => f.productos.length);
+
+        // ¿Cada cadena tiene un solo surtido?
+        const surtidosPorCadena = {};
+        listaSalas.forEach((s) => { (surtidosPorCadena[s.cadena] = surtidosPorCadena[s.cadena] || new Set()).add(s.surtido.numero); });
+        const cadenasMixtas = Object.values(surtidosPorCadena).filter((set) => set.size > 1).length;
+
+        return { salas, listaSalas, productos, surtidos, familias, asignacionesTotal, excluidas: excluidas.size, cadenasMixtas,
+                 cadenas: Object.keys(surtidosPorCadena).sort((a, b) => a.localeCompare(b, "es")) };
+      }
+
+      function cargar() {
+        fetch(ARCHIVO_DATOS, { cache: "no-cache" })
+          .then((res) => { if (!res.ok) throw new Error("respuesta " + res.status); return res.arrayBuffer(); })
+          .then(iniciarDesde)
+          .catch(() => mostrarAviso(location.protocol === "file:"
+            ? "Estás abriendo la página desde tu computador, y el navegador no deja leer el Excel así. En GitHub Pages se carga solo. Para probarla aquí, abre el archivo con el botón."
+            : `Revisa que el archivo se llame exactamente ${ARCHIVO_DATOS} y que esté en la misma carpeta que surtido.html.`));
+      }
+
+      function iniciarDesde(buffer) {
+        try { D = procesar(buffer); }
+        catch (e) { mostrarAviso(e.message); return; }
+        $("aviso").hidden = true;
+        $("ficha").hidden = false;
+        $("vistas").hidden = false;
+        pintarResumen();
+        prepararTabla();
+        pintarMatriz();
+        abrirDesdeHash();
+      }
+
+      function mostrarAviso(texto) {
+        $("aviso").hidden = false;
+        $("avisoTexto").textContent = texto;
+        $("nota").textContent = "Sin datos";
+      }
+
+      $("archivoLocal").addEventListener("change", (e) => {
+        const archivo = e.target.files[0];
+        if (archivo) archivo.arrayBuffer().then(iniciarDesde);
+      });
+
+      /* ================= Encabezado ================= */
+
+      function pintarResumen() {
+        $("kSalas").textContent = miles(D.listaSalas.length);
+        $("kProductos").textContent = miles(D.productos.size);
+        $("kSurtidos").textContent = miles(D.surtidos.length);
+        $("kAsignaciones").textContent = miles(D.asignacionesTotal);
+        $("nota").textContent = D.excluidas
+          ? `Sin las ${plural(D.excluidas, "sala", "salas")} ${CADENAS_EXCLUIDAS.join(", ")}`
+          : "Todas las salas";
+        $("frase").textContent = D.cadenasMixtas === 0
+          ? "Todas las salas de una misma cadena miden exactamente lo mismo."
+          : `En ${plural(D.cadenasMixtas, "cadena", "cadenas")} hay salas que miden productos distintos entre sí.`;
+      }
+
+      /* ================= Ficha de la sala ================= */
+
+      function abrirDesdeHash() {
+        const m = location.hash.match(/^#sala-(.+)$/);
+        const id = m ? decodeURIComponent(m[1]) : null;
+        const sala = (id && D.salas.get(id)) || D.listaSalas[0];
+        pintarSala(sala);
+      }
+
+      function irASala(sala, desplazar) {
+        if (!sala) return;
+        const hash = "#sala-" + encodeURIComponent(sala.id);
+        if (location.hash !== hash) location.hash = hash;   // dispara hashchange → pintarSala
+        else pintarSala(sala);
+        if (desplazar) $("ficha").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      }
+
+      window.addEventListener("hashchange", () => { if (D) abrirDesdeHash(); });
+
+      function pintarSala(sala) {
+        salaActual = sala;
+        const i = D.listaSalas.indexOf(sala);
+        const s = sala.surtido;
+        const otras = s.salas.length - 1;
+
+        $("posicion").textContent = `Sala ${i + 1} de ${D.listaSalas.length}`;
+        $("salaCadena").textContent = sala.cadena;
+        $("salaId").textContent = `Id ${sala.id}`;
+        $("salaNombre").textContent = sala.nombre;
+        $("salaN").textContent = sala.productos.size;
+        $("salaTotal").textContent = D.productos.size;
+        $("salaBarra").style.width = (sala.productos.size / D.productos.size) * 100 + "%";
+        $("salaSurtido").textContent = `Surtido ${s.numero}`;
+        $("salaCompartido").textContent = otras
+          ? `, compartido con ${plural(otras, "sala más", "salas más")}`
+          : ", solo lo tiene esta sala";
+        $("salaSurtidoNombre").textContent = s.nombre;
+        document.title = `${sala.nombre} – Surtido canal tradicional`;
+
+        $("familias").innerHTML = D.familias.map((f) => {
+          const medidos = f.productos.filter((p) => sala.productos.has(p.id)).length;
+          const chips = f.productos.map((p) => {
+            const mide = sala.productos.has(p.id);
+            return `<button type="button" class="chip${mide ? "" : " chip--no"}" data-sku="SKU ${esc(p.sku || "sin código")}">
+                ${esc(p.nombre)}<span class="visualmente-oculto">, SKU ${esc(p.sku || "sin código")}${mide ? "" : ", no se mide"}</span>
+              </button>`;
+          }).join("");
+          return `
+            <section class="familia${medidos ? "" : " familia--vacia"}" style="--fam:${colorFam(f.nombre)}">
+              <h4 class="familia__titulo"><span class="familia__punto" aria-hidden="true"></span>${esc(f.nombre)}
+                <span class="familia__cuenta">${medidos} de ${f.productos.length}</span></h4>
+              <div class="familia__chips">${chips}</div>
+              ${medidos ? "" : '<p class="familia__nada">No se mide ningún producto de esta familia.</p>'}
+            </section>`;
+        }).join("");
+
+        // Resaltar en tabla y matriz
+        document.querySelectorAll("#cuerpoSalas tr").forEach((tr) => tr.classList.toggle("activa", tr.dataset.id === sala.id));
+        document.querySelectorAll("#matriz .activa").forEach((el) => el.classList.remove("activa"));
+        document.querySelectorAll(`#matriz [data-s="${s.numero}"]`).forEach((el) => el.classList.add("activa"));
+      }
+
+      $("btnAnterior").addEventListener("click", () => {
+        const i = D.listaSalas.indexOf(salaActual);
+        irASala(D.listaSalas[(i - 1 + D.listaSalas.length) % D.listaSalas.length]);
+      });
+      $("btnSiguiente").addEventListener("click", () => {
+        const i = D.listaSalas.indexOf(salaActual);
+        irASala(D.listaSalas[(i + 1) % D.listaSalas.length]);
+      });
+
+      $("ocultarNoMedidos").addEventListener("change", (e) => $("familias").classList.toggle("familias--ocultar", e.target.checked));
+
+      // SKU al tocar (en celular no hay "pasar el mouse")
+      $("familias").addEventListener("click", (e) => {
+        const chip = e.target.closest(".chip");
+        document.querySelectorAll(".chip.abierto").forEach((c) => { if (c !== chip) c.classList.remove("abierto"); });
+        if (chip) chip.classList.toggle("abierto");
+      });
+
+      $("salaSurtido").addEventListener("click", () => {
+        activarPestana("matriz");
+        $("vistas").scrollIntoView({ behavior: "smooth" });
+      });
+
+      $("btnCopiar").addEventListener("click", () => {
+        const link = location.href.split("#")[0] + "#sala-" + encodeURIComponent(salaActual.id);
+        const listo = () => {
+          $("btnCopiar").textContent = "Link copiado";
+          setTimeout(() => { $("btnCopiar").textContent = "Copiar link de esta sala"; }, 2000);
+        };
+        (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject())
+          .then(listo)
+          .catch(() => {
+            const campo = document.createElement("textarea");
+            campo.value = link; document.body.appendChild(campo); campo.select();
+            try { document.execCommand("copy"); listo(); } catch (e) { prompt("Copia este link:", link); }
+            campo.remove();
+          });
+      });
+
+      /* ---------- Buscador con autocompletado ---------- */
+
+      const input = $("buscaSala"), lista = $("sugerencias");
+      let coincidencias = [], activa = -1;
+
+      function buscar() {
+        const q = normBusqueda(input.value.trim());
+        if (!q) { cerrarLista(); return; }
+        coincidencias = D.listaSalas.filter((s) => normBusqueda(`${s.nombre} ${s.cadena} ${s.id}`).includes(q)).slice(0, 8);
+        activa = coincidencias.length ? 0 : -1;
+        pintarLista();
+      }
+
+      function pintarLista() {
+        lista.innerHTML = coincidencias.length
+          ? coincidencias.map((s, i) => `
+              <li role="option" id="opcion-${i}" data-i="${i}" aria-selected="${i === activa}">
+                <span class="combo__nombre">${esc(s.nombre)}</span>
+                <span class="combo__detalle"><span class="etiqueta-cadena">${esc(s.cadena)}</span> Id ${esc(s.id)}</span>
+              </li>`).join("")
+          : `<li class="combo__vacio">No hay salas con ese nombre, cadena o Id.</li>`;
+        lista.hidden = false;
+        input.setAttribute("aria-expanded", "true");
+        if (activa >= 0) input.setAttribute("aria-activedescendant", "opcion-" + activa);
+        else input.removeAttribute("aria-activedescendant");
+      }
+
+      function cerrarLista() {
+        lista.hidden = true;
+        input.setAttribute("aria-expanded", "false");
+        input.removeAttribute("aria-activedescendant");
+      }
+
+      function elegir(i) {
+        const sala = coincidencias[i];
+        if (!sala) return;
+        input.value = "";
+        cerrarLista();
+        input.blur();
+        irASala(sala);
+      }
+
+      input.addEventListener("input", buscar);
+      input.addEventListener("keydown", (e) => {
+        if (lista.hidden && e.key !== "ArrowDown") return;
+        if (e.key === "ArrowDown") { e.preventDefault(); if (lista.hidden) { buscar(); return; } activa = Math.min(activa + 1, coincidencias.length - 1); pintarLista(); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); activa = Math.max(activa - 1, 0); pintarLista(); }
+        else if (e.key === "Enter") { e.preventDefault(); elegir(activa); }
+        else if (e.key === "Escape") { cerrarLista(); }
+      });
+      lista.addEventListener("mousedown", (e) => e.preventDefault());   // no perder el foco al hacer clic
+      lista.addEventListener("click", (e) => { const li = e.target.closest("li[data-i]"); if (li) elegir(+li.dataset.i); });
+      input.addEventListener("blur", cerrarLista);
+
+      /* ================= Pestañas ================= */
+
+      function activarPestana(cual) {
+        const salasActiva = cual === "salas";
+        $("tabSalas").setAttribute("aria-selected", salasActiva);
+        $("tabMatriz").setAttribute("aria-selected", !salasActiva);
+        $("tabSalas").tabIndex = salasActiva ? 0 : -1;
+        $("tabMatriz").tabIndex = salasActiva ? -1 : 0;
+        $("panelSalas").hidden = !salasActiva;
+        $("panelMatriz").hidden = salasActiva;
+      }
+      $("tabSalas").addEventListener("click", () => activarPestana("salas"));
+      $("tabMatriz").addEventListener("click", () => activarPestana("matriz"));
+      document.querySelector(".pestanas").addEventListener("keydown", (e) => {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        const siguiente = $("tabSalas").getAttribute("aria-selected") === "true" ? "matriz" : "salas";
+        activarPestana(siguiente);
+        $(siguiente === "salas" ? "tabSalas" : "tabMatriz").focus();
+      });
+
+      /* ================= Tabla: todas las salas ================= */
+
+      function prepararTabla() {
+        const cuenta = {};
+        D.listaSalas.forEach((s) => { cuenta[s.cadena] = (cuenta[s.cadena] || 0) + 1; });
+        $("filtroCadena").innerHTML = `<option value="">Todas las cadenas</option>` +
+          D.cadenas.map((c) => `<option value="${esc(c)}">${esc(c)} (${cuenta[c]})</option>`).join("");
+
+        const columnas = [
+          { col: "sala", texto: "Sala" },
+          { col: "cadena", texto: "Cadena" },
+          { col: "productos", texto: "Productos" },
+          ...D.familias.map((f, i) => ({ col: "f" + i, texto: f.nombre, fam: f }))
+        ];
+        $("cabeceraSalas").innerHTML = columnas.map((c) => `
+          <th scope="col" class="${c.fam ? "col-fam" : "col-" + c.col}" data-col="${c.col}" aria-sort="none">
+            <button type="button">${c.fam ? `<span class="familia__punto" style="--fam:${colorFam(c.fam.nombre)}" aria-hidden="true"></span>` : ""}${esc(c.texto)}<span class="orden" aria-hidden="true"></span></button>
+          </th>`).join("");
+        pintarTabla();
+      }
+
+      function valorOrden(s, col) {
+        if (col === "sala") return s.nombre;
+        if (col === "cadena") return s.cadena + " " + s.nombre;
+        if (col === "productos") return s.productos.size;
+        const f = D.familias[+col.slice(1)];
+        return f.productos.filter((p) => s.productos.has(p.id)).length;
+      }
+
+      function pintarTabla() {
+        const q = normBusqueda($("filtroTexto").value.trim());
+        const cadena = $("filtroCadena").value;
+        const filas = D.listaSalas
+          .filter((s) => (!cadena || s.cadena === cadena) && (!q || normBusqueda(s.nombre + " " + s.id).includes(q)))
+          .sort((a, b) => {
+            const va = valorOrden(a, orden.col), vb = valorOrden(b, orden.col);
+            const r = typeof va === "number" ? va - vb : va.localeCompare(vb, "es");
+            return r * orden.dir || a.nombre.localeCompare(b.nombre, "es");
+          });
+
+        document.querySelectorAll("#cabeceraSalas th").forEach((th) =>
+          th.setAttribute("aria-sort", th.dataset.col === orden.col ? (orden.dir === 1 ? "ascending" : "descending") : "none"));
+
+        const total = D.productos.size;
+        $("cuerpoSalas").innerHTML = filas.map((s) => `
+          <tr data-id="${esc(s.id)}" class="${salaActual === s ? "activa" : ""}">
+            <td class="col-sala"><button type="button" class="enlace-fila">${esc(s.nombre)}</button><span class="col-sala__id">Id ${esc(s.id)}</span></td>
+            <td class="col-cadena"><span class="etiqueta-cadena">${esc(s.cadena)}</span></td>
+            <td class="col-productos">
+              <span class="celda-barra"><span class="celda-barra__n">${s.productos.size}</span>
+                <span class="celda-barra__pista" aria-hidden="true"><span style="width:${(s.productos.size / total) * 100}%"></span></span></span>
+            </td>
+            ${D.familias.map((f) => {
+              const n = f.productos.filter((p) => s.productos.has(p.id)).length;
+              return `<td class="col-fam">${n ? n : '<span class="sin-dato">–</span>'}</td>`;
+            }).join("")}
+          </tr>`).join("");
+
+        $("conteoSalas").textContent = plural(filas.length, "sala", "salas");
+        $("vacioSalas").hidden = filas.length > 0;
+      }
+
+      $("cabeceraSalas").addEventListener("click", (e) => {
+        const th = e.target.closest("th");
+        if (!th) return;
+        const col = th.dataset.col;
+        // números parten de mayor a menor; textos de A a Z
+        orden = orden.col === col ? { col, dir: -orden.dir } : { col, dir: col === "sala" || col === "cadena" ? 1 : -1 };
+        pintarTabla();
+      });
+      $("filtroTexto").addEventListener("input", pintarTabla);
+      $("filtroCadena").addEventListener("change", pintarTabla);
+      $("cuerpoSalas").addEventListener("click", (e) => {
+        const tr = e.target.closest("tr[data-id]");
+        if (tr) irASala(D.salas.get(tr.dataset.id), true);
+      });
+
+      /* ================= Matriz de surtido ================= */
+
+      function pintarMatriz() {
+        const S = D.surtidos;
+        const cabeza = `
+          <thead><tr>
+            <th scope="col" class="matriz__esquina">Producto</th>
+            ${S.map((s) => `
+              <th scope="col" class="matriz__surtido" data-s="${s.numero}">
+                <button type="button" class="matriz__vertical">
+                  <span class="matriz__num">S${s.numero}</span>${esc(s.nombre)} · ${plural(s.salas.length, "sala", "salas")}
+                </button>
+              </th>`).join("")}
+            <th scope="col" class="matriz__total">Salas que lo miden</th>
+          </tr></thead>`;
+
+        const cuerpo = D.familias.map((f) => `
+          <tbody style="--fam:${colorFam(f.nombre)}">
+            <tr class="matriz__grupo">
+              <th scope="rowgroup" colspan="${S.length + 2}"><span><span class="familia__punto" aria-hidden="true"></span>${esc(f.nombre)}</span></th>
+            </tr>
+            ${f.productos.map((p) => `
+              <tr>
+                <th scope="row" class="matriz__producto" data-p="${esc(p.id)}">${esc(p.nombre)}</th>
+                ${S.map((s) => {
+                  const mide = s.productos.has(p.id);
+                  return `<td data-s="${s.numero}" data-p="${esc(p.id)}">${mide
+                    ? '<span class="punto" aria-hidden="true"></span><span class="visualmente-oculto">Se mide</span>'
+                    : '<span class="visualmente-oculto">No se mide</span>'}</td>`;
+                }).join("")}
+                <td class="matriz__cuenta"><span class="matriz__cuenta-in">
+                  <span class="matriz__cuenta-n">${p.salas}</span>
+                  <span class="celda-barra__pista" aria-hidden="true"><span style="width:${(p.salas / D.listaSalas.length) * 100}%"></span></span>
+                </span></td>
+              </tr>`).join("")}
+          </tbody>`).join("");
+
+        $("matriz").innerHTML = cabeza + cuerpo;
+      }
+
+      // Detalle al pasar el mouse o tocar
+      const tip = $("tooltip");
+
+      function contenidoTip(el) {
+        const s = el.dataset.s ? D.surtidos[+el.dataset.s - 1] : null;
+        const p = el.dataset.p ? D.productos.get(el.dataset.p) : null;
+        if (s && p) {
+          const mide = s.productos.has(p.id);
+          return `<strong>${esc(p.nombre)}</strong>
+            <span>Surtido ${s.numero}: ${esc(s.nombre)}, ${plural(s.salas.length, "sala", "salas")}</span>
+            <span class="${mide ? "tip-si" : "tip-no"}">${mide ? "Se mide" : "No se mide"}</span>`;
+        }
+        if (s) {
+          return `<strong>Surtido ${s.numero}: ${esc(s.nombre)}</strong>
+            <span>${plural(s.salas.length, "sala", "salas")}, ${plural(s.productos.size, "producto", "productos")}</span>
+            <span>${s.cadenas.map(([c, n]) => `${esc(c)} (${n})`).join(", ")}</span>
+            <span class="tip-ayuda">Clic para abrir una sala de este surtido</span>`;
+        }
+        if (p) {
+          return `<strong>${esc(p.nombre)}</strong>
+            <span>SKU ${esc(p.sku || "sin código")}, ${esc(p.familia)}</span>
+            <span>Se mide en ${plural(p.salas, "sala", "salas")} de ${D.listaSalas.length}</span>`;
+        }
+        return "";
+      }
+
+      function mostrarTip(el) {
+        const html = contenidoTip(el);
+        if (!html) { tip.hidden = true; return; }
+        tip.innerHTML = html;
+        tip.hidden = false;
+        const r = el.getBoundingClientRect();
+        const w = tip.offsetWidth, h = tip.offsetHeight;
+        let x = r.left + r.width / 2 - w / 2;
+        x = Math.max(8, Math.min(x, innerWidth - w - 8));
+        let y = r.bottom + 8;
+        if (y + h > innerHeight - 8) y = r.top - h - 8;
+        tip.style.left = x + "px";
+        tip.style.top = y + "px";
+      }
+
+      const matriz = $("matriz");
+      matriz.addEventListener("pointerover", (e) => {
+        if (e.pointerType !== "mouse") return;
+        const el = e.target.closest("[data-s], [data-p]");
+        if (el) mostrarTip(el); else tip.hidden = true;
+      });
+      matriz.addEventListener("pointerleave", () => { tip.hidden = true; });
+      matriz.addEventListener("click", (e) => {
+        const cabecera = e.target.closest("th[data-s]");
+        if (cabecera) {
+          tip.hidden = true;
+          const s = D.surtidos[+cabecera.dataset.s - 1];
+          irASala(s.salas.includes(salaActual) ? salaActual : s.salas[0], true);
+          return;
+        }
+        const el = e.target.closest("[data-s], [data-p]");
+        if (el) mostrarTip(el);
+      });
+      matriz.addEventListener("focusin", (e) => { const el = e.target.closest("[data-s]"); if (el) mostrarTip(el); });
+      matriz.addEventListener("focusout", () => { tip.hidden = true; });
+      document.querySelector(".matriz-envoltura").addEventListener("scroll", () => { tip.hidden = true; }, { passive: true });
+      window.addEventListener("scroll", () => { tip.hidden = true; }, { passive: true });
+
+      cargar();
+    })();
+  </script>
+</body>
+</html>
