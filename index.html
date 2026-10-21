@@ -3,324 +3,149 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Formularios pendientes</title>
+  <title>Panel canal tradicional</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <header class="cabecera">
-    <div class="contenedor">
+  <header class="sitio">
+    <div class="contenedor sitio__barra">
+      <a class="sitio__marca" href="index.html">
+        <span class="sitio__nombre">Panel canal tradicional</span>
+        <span class="sitio__cliente">Cliente Nutrisco</span>
+      </a>
       <nav class="menu" aria-label="Secciones del sitio">
-        <a href="index.html" aria-current="page">Formularios pendientes</a>
+        <a href="pendientes.html">Formularios pendientes</a>
         <a href="surtido.html">Matriz de productos</a>
         <a href="respuestas.html">Respuestas góndola</a>
       </nav>
-      <p class="cabecera__cliente">Cliente Nutrisco <span id="corte">Cargando datos…</span></p>
-      <h1 class="cabecera__titulo">Formularios pendientes</h1>
-      <svg class="pincelada" viewBox="0 0 420 26" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M4 16 C 60 6, 130 4, 210 9 S 360 20, 416 8 L 414 15 C 360 26, 290 22, 210 17 S 70 12, 6 22 Z"/>
-      </svg>
-      <dl class="resumen">
-        <div><dt>Faltantes</dt><dd id="totalFaltantes">–</dd></div>
-        <div><dt>Justificados</dt><dd id="totalJustificados">–</dd></div>
-        <div class="resumen__alerta"><dt>Pendientes</dt><dd id="totalPendientes">–</dd></div>
-      </dl>
     </div>
   </header>
 
+  <section class="titular">
+    <div class="contenedor">
+      <h1>Panel canal tradicional</h1>
+      <p class="titular__desc">Seguimiento de la operación en sala para el cliente Nutrisco: qué formularios faltan, qué productos se miden en cada sala y cómo responden los mercaderistas el formulario de góndola.</p>
+      <ol class="guia">
+        <li><strong>1. Elige una sección</strong>Cada una responde una pregunta distinta.</li>
+        <li><strong>2. Busca tu equipo o tu sala</strong>Por supervisor, por cadena o con el buscador.</li>
+        <li><strong>3. Comparte el link</strong>Cada ficha tiene su propio link para enviar por WhatsApp o correo.</li>
+      </ol>
+      <div style="height:24px"></div>
+    </div>
+  </section>
+
   <main class="contenedor">
+    <div class="secciones">
 
-    <!-- Aviso si no se pudo leer el Excel -->
-    <section class="aviso" id="aviso" hidden>
-      <h2>No se pudo cargar datos.xlsx</h2>
-      <p id="avisoTexto"></p>
-      <label class="boton boton--principal">
-        Abrir el Excel desde mi computador
-        <input type="file" id="archivoLocal" accept=".xlsx,.xls,.csv" hidden>
-      </label>
-    </section>
-
-    <section class="bloque" id="bloqueSupervisores" aria-labelledby="tituloSupervisores">
-      <div class="bloque__encabezado">
+      <a class="seccion" href="pendientes.html">
         <div>
-          <h2 id="tituloSupervisores">Pendientes por supervisor</h2>
-          <p>Haz clic en una ficha para ver el detalle de su equipo.</p>
+          <h2>Formularios pendientes</h2>
+          <p class="seccion__pregunta">¿Qué formularios faltan, de qué mercaderista y en qué sala?</p>
+          <p class="seccion__como">Por supervisor, con el estado de cada formulario: pendiente o justificado.</p>
         </div>
-        <button type="button" class="boton boton--contorno" id="btnTodos">Ver todos</button>
-      </div>
-      <div class="supervisores" id="supervisores"></div>
-    </section>
-
-    <section class="bloque detalle" id="detalle" hidden aria-labelledby="tituloDetalle">
-      <div class="detalle__barra">
-        <h2 id="tituloDetalle"></h2>
-        <p id="subtituloDetalle" class="detalle__sub"></p>
-      </div>
-
-      <div class="detalle__cuerpo">
-        <aside class="ranking" aria-labelledby="tituloRanking">
-          <h3 id="tituloRanking">Pendientes por mercaderista</h3>
-          <ol id="ranking"></ol>
-        </aside>
-
-        <div class="detalle__tabla">
-          <div class="filtros">
-            <div class="segmentos" role="group" aria-label="Filtrar por estado">
-              <button type="button" data-estado="pendiente" aria-pressed="true">Pendientes</button>
-              <button type="button" data-estado="justificado" aria-pressed="false">Justificados</button>
-              <button type="button" data-estado="todos" aria-pressed="false">Todos</button>
-            </div>
-            <label class="buscador">
-              <span class="visualmente-oculto">Buscar mercaderista o local</span>
-              <input type="search" id="buscador" placeholder="Buscar mercaderista o local">
-            </label>
-          </div>
-
-          <div class="tabla-envoltura">
-            <table class="tabla">
-              <thead>
-                <tr>
-                  <th scope="col">Fecha</th>
-                  <th scope="col">Formulario</th>
-                  <th scope="col">Mercaderista</th>
-                  <th scope="col">Local</th>
-                  <th scope="col" class="col-super">Supervisor</th>
-                  <th scope="col">Estado</th>
-                </tr>
-              </thead>
-              <tbody id="cuerpoTabla"></tbody>
-            </table>
-            <p class="vacio" id="vacio" hidden></p>
-          </div>
+        <div class="seccion__cifra" id="cifraPendientes">
+          <strong>–</strong><span>Cargando…</span>
         </div>
-      </div>
-    </section>
+      </a>
 
+      <a class="seccion" href="surtido.html">
+        <div>
+          <h2>Matriz de productos</h2>
+          <p class="seccion__pregunta">¿Qué productos se miden en cada sala del canal tradicional?</p>
+          <p class="seccion__como">Por cadena y por sala, con la lista de productos y su SKU.</p>
+        </div>
+        <div class="seccion__cifra" id="cifraSurtido">
+          <strong>–</strong><span>Cargando…</span>
+        </div>
+      </a>
+
+      <a class="seccion" href="respuestas.html">
+        <div>
+          <h2>Respuestas Gestión Góndola</h2>
+          <p class="seccion__pregunta">¿Cómo está respondiendo cada mercaderista el formulario de góndola?</p>
+          <p class="seccion__como">Mapa de calor por supervisor, por mercaderista y día a día.</p>
+        </div>
+        <div class="seccion__cifra" id="cifraRespuestas">
+          <strong>–</strong><span>Cargando…</span>
+        </div>
+      </a>
+
+    </div>
   </main>
 
   <footer class="pie contenedor">
-    <p>Para justificar un formulario pendiente, responde por correo o WhatsApp indicando fecha, mercaderista, local y motivo.</p>
+    <p>Las cifras de esta portada se calculan desde los mismos archivos que usa cada sección.</p>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comun.js"></script>
   <script>
-    /* ===== Configuración ===== */
-    const ARCHIVO_DATOS = "datos.xlsx";   // nombre del Excel en el repositorio
-    const HOJA = "Faltantes";             // hoja que se lee (si no existe, se usa la primera)
-
     (function () {
-      const $ = (id) => document.getElementById(id);
-      let REGISTROS = [];
-      let supervisorActivo = null;   // null = todos
-      let estadoFiltro = "pendiente";
+      const C = window.Comun;
 
-      /* ---------- Lectura del Excel ---------- */
+      function poner(id, cifra, texto) {
+        const el = document.getElementById(id);
+        el.innerHTML = `<strong>${cifra}</strong><span>${texto}</span><span class="seccion__abrir">Abrir sección ›</span>`;
+      }
 
-      // Normaliza títulos: "Supervisor", "SUPERVISOR " o "Usuario" → claves internas
-      const ALIAS = {
-        FECHA: "fecha", FORMULARIO: "formulario",
-        MERCADERISTA: "mercaderista", USUARIO: "mercaderista",
-        LOCAL: "local", PDV: "local",
-        SUPERVISOR: "supervisor", PERMISO: "permiso", JUSTIFICACION: "permiso",
-        TOTAL: "cantidad", CANTIDAD: "cantidad"
-      };
-      const normalizarTitulo = (t) => String(t).normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toUpperCase();
-      const limpiar = (t) => String(t == null ? "" : t).replace(/\s+/g, " ").trim();
-
-      function fechaTexto(v) {
-        if (typeof v === "number") {                       // fecha guardada como número de Excel
+      function fechaISO(v) {
+        if (typeof v === "number" && v > 20000) {
           const d = new Date(Math.round((v - 25569) * 86400000));
-          return [d.getUTCDate(), d.getUTCMonth() + 1].map((n) => String(n).padStart(2, "0")).join("-") + "-" + d.getUTCFullYear();
+          return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
         }
-        return limpiar(v).replace(/\//g, "-");
+        const m = C.limpiar(v).match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+        return m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : null;
       }
-      const fechaOrden = (t) => { const [d, m, a] = t.split("-"); return (a || "") + (m || "") + (d || ""); };
 
-      function leerLibro(datos) {
-        const libro = XLSX.read(datos, { type: "array" });
-        const hoja = libro.Sheets[HOJA] || libro.Sheets[libro.SheetNames[0]];
-        const filas = XLSX.utils.sheet_to_json(hoja, { raw: true, defval: "" });
+      function filas(buf, hoja) {
+        const libro = XLSX.read(buf, { type: "array" });
+        const nombre = libro.SheetNames.find((n) => C.normTitulo(n) === C.normTitulo(hoja || "")) || libro.SheetNames[0];
+        const f = XLSX.utils.sheet_to_json(libro.Sheets[nombre], { header: 1, raw: true, defval: "" });
+        return { h: (f[0] || []).map(C.normTitulo), datos: f.slice(1), libro };
+      }
 
-        const registros = [];
-        let ultimoSup = "", ultimaFecha = "";
-        filas.forEach((fila) => {
-          const r = {};
-          Object.keys(fila).forEach((k) => { const clave = ALIAS[normalizarTitulo(k)]; if (clave) r[clave] = fila[k]; });
+      const sinDatos = (id) => () => poner(id, "–", "No se pudieron leer los datos");
 
-          // Si SUPERVISOR o FECHA vienen vacíos (reporte agrupado), se usa el de la fila anterior
-          const sup = limpiar(r.supervisor) || ultimoSup;
-          const fecha = fechaTexto(r.fecha) || ultimaFecha;
-          ultimoSup = sup; ultimaFecha = fecha;
-          if (!limpiar(r.mercaderista) && !limpiar(r.local)) return;   // fila vacía
+      // Formularios pendientes
+      C.traer("datos.xlsx").then((buf) => {
+        const { h, datos } = filas(buf, "Faltantes");
+        const iF = h.indexOf("FECHA"), iM = h.indexOf("MERCADERISTA"), iP = h.indexOf("PERMISO");
+        const validas = datos.filter((r) => C.limpiar(r[iM]));
+        const pend = validas.filter((r) => !C.limpiar(r[iP])).length;
+        const ultima = validas.map((r) => fechaISO(r[iF])).filter(Boolean).sort().pop();
+        poner("cifraPendientes", C.miles(pend), `pendientes de ${C.plural(validas.length, "formulario", "formularios")}${ultima ? `<br>Datos hasta el ${C.fechaLarga(ultima)}` : ""}`);
+      }).catch(sinDatos("cifraPendientes"));
 
-          const cantidad = Math.max(1, parseInt(r.cantidad, 10) || 1);
-          for (let i = 0; i < cantidad; i++) {
-            registros.push({
-              fecha,
-              formulario: limpiar(r.formulario) || "Formulario",
-              mercaderista: limpiar(r.mercaderista),
-              local: limpiar(r.local),
-              supervisor: sup || "Sin supervisor",
-              permiso: limpiar(r.permiso)
-            });
-          }
+      // Matriz de productos (sin Alvi)
+      C.traer("surtido.xlsx").then((buf) => {
+        const libro = XLSX.read(buf, { type: "array" });
+        const hoja = (n) => libro.SheetNames.find((x) => C.normTitulo(x) === C.normTitulo(n));
+        const leer = (n) => XLSX.utils.sheet_to_json(libro.Sheets[hoja(n)], { raw: false, defval: "" })
+          .map((r) => { const o = {}; Object.keys(r).forEach((k) => { o[C.normTitulo(k)] = r[k]; }); return o; });
+        const locales = new Map(leer("Locales").map((r) => [C.limpiar(r.IDLOCAL), C.limpiar(r.NOMBRELOCAL)]));
+        const salas = new Set(), productos = new Set();
+        leer("Asignaciones").forEach((r) => {
+          const id = C.limpiar(r.IDLOCAL);
+          const nombre = C.limpiar(r.NOMBRELOCAL) || locales.get(id) || "";
+          if (!id || nombre.toUpperCase().includes("ALVI")) return;
+          salas.add(id); productos.add(C.limpiar(r.IDELEMENTO));
         });
-        return registros;
-      }
+        poner("cifraSurtido", C.miles(salas.size), `salas, ${C.plural(productos.size, "producto medido", "productos medidos")}<br>Sin salas Alvi`);
+      }).catch(sinDatos("cifraSurtido"));
 
-      function cargarDesdeRepositorio() {
-        fetch(ARCHIVO_DATOS, { cache: "no-cache" })
-          .then((res) => { if (!res.ok) throw new Error("respuesta " + res.status); return res.arrayBuffer(); })
-          .then((buf) => iniciar(leerLibro(buf)))
-          .catch(() => mostrarAviso(
-            location.protocol === "file:"
-              ? "Estás abriendo la página desde tu computador, y el navegador no deja leer el Excel así. En GitHub Pages se carga solo. Para probarla aquí, abre el archivo con el botón."
-              : `Revisa que el archivo se llame exactamente ${ARCHIVO_DATOS} y que esté en la misma carpeta que index.html.`
-          ));
-      }
-
-      function mostrarAviso(texto) {
-        $("aviso").hidden = false;
-        $("avisoTexto").textContent = texto;
-        $("corte").textContent = "Sin datos";
-      }
-
-      $("archivoLocal").addEventListener("change", (e) => {
-        const archivo = e.target.files[0];
-        if (!archivo) return;
-        archivo.arrayBuffer().then((buf) => { $("aviso").hidden = true; iniciar(leerLibro(buf)); });
-      });
-
-      /* ---------- Pintar la página ---------- */
-
-      const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-      const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
-
-      function iniciar(registros) {
-        REGISTROS = registros.sort((a, b) => fechaOrden(a.fecha).localeCompare(fechaOrden(b.fecha)));
-        const pendientes = REGISTROS.filter((r) => !r.permiso).length;
-        $("totalFaltantes").textContent = REGISTROS.length;
-        $("totalJustificados").textContent = REGISTROS.length - pendientes;
-        $("totalPendientes").textContent = pendientes;
-        const ultima = REGISTROS.length ? REGISTROS[REGISTROS.length - 1].fecha : "";
-        $("corte").textContent = ultima ? `Datos hasta el ${ultima}` : "Sin registros";
-        pintarSupervisores();
-      }
-
-      function pintarSupervisores() {
-        const grupos = {};
-        REGISTROS.forEach((r) => {
-          const g = grupos[r.supervisor] || (grupos[r.supervisor] = { nombre: r.supervisor, total: 0, pendientes: 0 });
-          g.total++; if (!r.permiso) g.pendientes++;
-        });
-        const lista = Object.values(grupos).sort((a, b) => b.pendientes - a.pendientes || a.nombre.localeCompare(b.nombre));
-        const max = Math.max(1, ...lista.map((g) => g.pendientes));
-
-        $("supervisores").innerHTML = lista.map((g) => {
-          const estado = g.pendientes === 0 ? "listo" : "pendiente";
-          const detalle = g.pendientes === 0
-            ? `${plural(g.total, "formulario justificado", "formularios justificados")}`
-            : `${g.total - g.pendientes} de ${g.total} justificados`;
-          return `
-            <button type="button" class="ficha ficha--${estado}" data-sup="${esc(g.nombre)}"
-              aria-pressed="${supervisorActivo === g.nombre}">
-              <span class="ficha__numero">${g.pendientes === 0 ? "✓" : g.pendientes}</span>
-              <span class="ficha__nombre">${esc(g.nombre)}</span>
-              <span class="ficha__texto">${detalle}</span>
-              <span class="ficha__barra" aria-hidden="true"><span style="width:${(g.pendientes / max) * 100}%"></span></span>
-            </button>`;
-        }).join("");
-      }
-
-      $("supervisores").addEventListener("click", (e) => {
-        const ficha = e.target.closest(".ficha");
-        if (ficha) abrirDetalle(ficha.dataset.sup);
-      });
-      $("btnTodos").addEventListener("click", () => abrirDetalle(null));
-
-      function abrirDetalle(nombre) {
-        supervisorActivo = nombre;
-        $("buscador").value = "";
-        $("detalle").hidden = false;
-        $("detalle").classList.toggle("detalle--todos", nombre === null);
-        pintarSupervisores();
-        pintarDetalle();
-        const suave = !matchMedia("(prefers-reduced-motion: reduce)").matches;
-        $("detalle").scrollIntoView({ behavior: suave ? "smooth" : "auto" });
-      }
-
-      function pintarDetalle() {
-        const delGrupo = REGISTROS.filter((r) => supervisorActivo === null || r.supervisor === supervisorActivo);
-        const pend = delGrupo.filter((r) => !r.permiso);
-
-        $("tituloDetalle").textContent = supervisorActivo || "Todos los supervisores";
-        $("subtituloDetalle").textContent =
-          `${plural(pend.length, "pendiente", "pendientes")} de ${plural(delGrupo.length, "formulario faltante", "formularios faltantes")}`;
-
-        // Ranking por mercaderista (solo pendientes)
-        const conteo = {};
-        pend.forEach((r) => { conteo[r.mercaderista] = (conteo[r.mercaderista] || 0) + 1; });
-        const ranking = Object.entries(conteo).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-        const tope = ranking.length ? ranking[0][1] : 1;
-        $("ranking").innerHTML = ranking.length
-          ? ranking.map(([nombre, n]) => `
-              <li>
-                <button type="button" data-merc="${esc(nombre)}">
-                  <span class="ranking__nombre">${esc(nombre)}</span>
-                  <span class="ranking__n">${n}</span>
-                  <span class="ranking__barra" aria-hidden="true"><span style="width:${(n / tope) * 100}%"></span></span>
-                </button>
-              </li>`).join("")
-          : `<li class="ranking__vacio">Sin pendientes.</li>`;
-
-        // Tabla
-        const filtro = $("buscador").value.trim().toLowerCase();
-        const visibles = delGrupo.filter((r) =>
-          (estadoFiltro === "todos" || (estadoFiltro === "pendiente" ? !r.permiso : !!r.permiso)) &&
-          (!filtro || (r.mercaderista + " " + r.local).toLowerCase().includes(filtro)));
-
-        $("cuerpoTabla").innerHTML = visibles.map((r) => `
-          <tr class="${r.permiso ? "fila--lista" : "fila--pendiente"}">
-            <td data-etiqueta="Fecha" class="celda-fecha">${esc(r.fecha)}</td>
-            <td data-etiqueta="Formulario"><span class="etiqueta-form">${esc(r.formulario)}</span></td>
-            <td data-etiqueta="Mercaderista">${esc(r.mercaderista)}</td>
-            <td data-etiqueta="Local" class="celda-local">${r.local ? esc(r.local) : '<span class="sin-dato">Sin local registrado</span>'}</td>
-            <td data-etiqueta="Supervisor" class="col-super">${esc(r.supervisor)}</td>
-            <td data-etiqueta="Estado">${r.permiso
-              ? `<span class="estado estado--ok">${esc(r.permiso)}</span>`
-              : `<span class="estado estado--pend">Pendiente</span>`}</td>
-          </tr>`).join("");
-
-        const vacio = $("vacio");
-        vacio.hidden = visibles.length > 0;
-        vacio.textContent = filtro
-          ? "Ningún formulario coincide con la búsqueda."
-          : estadoFiltro === "pendiente" ? "No quedan formularios pendientes." : "No hay formularios para mostrar.";
-      }
-
-      // Filtro por estado
-      document.querySelector(".segmentos").addEventListener("click", (e) => {
-        const b = e.target.closest("button");
-        if (!b) return;
-        estadoFiltro = b.dataset.estado;
-        document.querySelectorAll(".segmentos button").forEach((x) => x.setAttribute("aria-pressed", x === b));
-        pintarDetalle();
-      });
-
-      // Clic en un mercaderista del ranking: lo busca en la tabla
-      $("ranking").addEventListener("click", (e) => {
-        const b = e.target.closest("button[data-merc]");
-        if (!b) return;
-        $("buscador").value = $("buscador").value === b.dataset.merc ? "" : b.dataset.merc;
-        pintarDetalle();
-      });
-
-      $("buscador").addEventListener("input", pintarDetalle);
-
-      cargarDesdeRepositorio();
+      // Respuestas góndola
+      C.traer("respuestas.xlsx").then((buf) => {
+        const { h, datos } = filas(buf);
+        const iF = h.indexOf("FECHA"), iR = h.indexOf("RESPONDIOELFORMULARIO"), iU = h.indexOf("USUARIO");
+        const validas = datos.filter((r) => fechaISO(r[iF]) && C.limpiar(r[iU]));
+        const resp = validas.filter((r) => C.clave(r[iR]).startsWith("si")).length;
+        const fechas = validas.map((r) => fechaISO(r[iF])).sort();
+        poner("cifraRespuestas", C.miles(resp), `formularios respondidos<br>Del ${C.fechaLarga(fechas[0])} al ${C.fechaLarga(fechas[fechas.length - 1])}`);
+      }).catch(sinDatos("cifraRespuestas"));
     })();
   </script>
 </body>
