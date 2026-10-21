@@ -6,34 +6,42 @@
   <title>Respuestas Gestión Góndola</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <header class="cabecera">
-    <div class="contenedor">
+  <header class="sitio">
+    <div class="contenedor sitio__barra">
+      <a class="sitio__marca" href="index.html">
+        <span class="sitio__nombre">Panel canal tradicional</span>
+        <span class="sitio__cliente">Cliente Nutrisco</span>
+      </a>
       <nav class="menu" aria-label="Secciones del sitio">
-        <a href="index.html">Formularios pendientes</a>
+        <a href="pendientes.html">Formularios pendientes</a>
         <a href="surtido.html">Matriz de productos</a>
         <a href="respuestas.html" aria-current="page">Respuestas góndola</a>
       </nav>
-      <p class="cabecera__cliente">Cliente Nutrisco <span id="periodo">Cargando datos…</span></p>
-      <h1 class="cabecera__titulo">Respuestas<br>Gestión Góndola</h1>
-      <svg class="pincelada" viewBox="0 0 420 26" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M4 16 C 60 6, 130 4, 210 9 S 360 20, 416 8 L 414 15 C 360 26, 290 22, 210 17 S 70 12, 6 22 Z"/>
-      </svg>
-      <p class="cabecera__frase">Cómo responde cada mercaderista si existe o no cada categoría en la góndola. Es para mirar patrones, no para calificar.</p>
-      <dl class="resumen resumen--4">
+    </div>
+  </header>
+
+  <section class="titular">
+    <div class="contenedor">
+      <h1>Respuestas Gestión Góndola</h1>
+      <p class="titular__meta" id="fechaDatos">Cargando datos…</p>
+      <p class="titular__desc">Cómo responde cada mercaderista si existe o no cada categoría en la góndola. Es para mirar patrones de respuesta, no para calificar.</p>
+      <dl class="indicadores">
         <div><dt>Visitas</dt><dd id="kVisitas">–</dd></div>
-        <div><dt>Formularios respondidos</dt><dd id="kRespondidos">–</dd></div>
+        <div><dt>Formularios respondidos</dt><dd id="kRespondidos">–</dd><small id="kRespPct"></small></div>
         <div><dt>Mercaderistas</dt><dd id="kMerc">–</dd></div>
         <div><dt>Salas</dt><dd id="kSalas">–</dd></div>
       </dl>
     </div>
-  </header>
+  </section>
 
   <main class="contenedor">
+
+    <div class="cargando" id="cargando" role="status"><span class="cargando__barra" aria-hidden="true"></span>Cargando datos…</div>
 
     <section class="aviso" id="aviso" hidden>
       <h2>No se pudo cargar respuestas.xlsx</h2>
@@ -55,7 +63,17 @@
         </div>
       </div>
 
+      <section class="aviso" id="avisoPrivado" hidden>
+        <h2>Este archivo trae datos personales</h2>
+        <p id="avisoPrivadoTexto"></p>
+      </section>
+
       <nav class="migas" id="migas" aria-label="Ubicación"></nav>
+
+      <section class="aviso aviso--info" id="avisoNoEncontrado" hidden>
+        <h2>Sin respuestas registradas</h2>
+        <p>Ese mercaderista no tiene respuestas del formulario de góndola en este período.</p>
+      </section>
 
       <!-- Paso 1: supervisores -->
       <section class="bloque paso" id="vistaSupervisores" aria-labelledby="tituloSup" hidden>
@@ -106,6 +124,7 @@
               <h2 id="mercNombre"></h2>
             </div>
             <div class="ficha-sala__acciones">
+              <a class="boton boton--contorno" id="lnkPendientes" href="pendientes.html">Ver sus formularios pendientes</a>
               <button type="button" class="boton boton--principal" id="btnCopiar">Copiar link de este mercaderista</button>
             </div>
           </div>
@@ -119,7 +138,7 @@
           </div>
 
           <h3 class="subtitulo">Día a día</h3>
-          <p class="nota">Cada celda es una visita: el número es cuántas de las 9 categorías respondió que sí existen. El borde punteado marca las visitas con <strong>exactamente las mismas respuestas</strong> que la visita anterior a esa sala. “–” es visita sin formulario y “P” es permiso. Pasa el mouse o toca una celda para ver el detalle.</p>
+          <p class="nota">Cada celda es una visita: el número es cuántas categorías respondió que sí existen (de <span id="nCats"></span>). El borde punteado marca las visitas con <strong>exactamente las mismas respuestas</strong> que la visita anterior a esa sala. “–” es visita sin formulario y “P” es permiso. Pasa el mouse o toca una celda para ver el detalle.</p>
           <div class="calor-envoltura">
             <table class="calor calor--dias" id="tablaDias"></table>
           </div>
@@ -130,17 +149,18 @@
   </main>
 
   <footer class="pie contenedor">
-    <p>Para actualizar: exporta las respuestas, borra la columna Rut, guarda el archivo como respuestas.xlsx y súbelo reemplazando el anterior.</p>
+    <p>Fuente: export de respuestas del formulario Gestión Góndola (respuestas.xlsx). Supervisor según supervisores.xlsx; si el mercaderista no está en esa lista, se usa el que trae el export. Los porcentajes se calculan sobre los formularios respondidos.</p>
+    <p>Para actualizar: exporta las respuestas, borra las columnas Rut, Detalle Permiso y las de FOTO, guarda el archivo como respuestas.xlsx y súbelo reemplazando el anterior.</p>
   </footer>
 
   <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
   <div class="aviso-flotante" id="avisoFlotante" role="status" aria-live="polite" hidden></div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comun.js"></script>
   <script>
     /* ===== Configuración ===== */
     const ARCHIVO_RESPUESTAS = "respuestas.xlsx";
-    const ARCHIVO_SUPERVISORES = "supervisores.xlsx";   // opcional: MERCADERISTA / SUPERVISOR
     const SIN_SUPERVISOR = "Sin supervisor";
 
     // Nombres cortos de las categorías (se reconocen por el texto de la pregunta)
@@ -198,26 +218,16 @@
       const fechaLarga = (f) => `${f.slice(8, 10)}-${f.slice(5, 7)}-${f.slice(0, 4)}`;
       const siNo = (v) => { const t = clave(v); return t.startsWith("si") ? 1 : t === "no" ? 0 : null; };
 
-      function leerMapa(buffer) {
-        const mapa = new Map();
-        if (!buffer) return mapa;
-        const libro = XLSX.read(buffer, { type: "array" });
-        const filas = XLSX.utils.sheet_to_json(libro.Sheets[libro.SheetNames[0]], { header: 1, defval: "" });
-        const h = (filas[0] || []).map(normTitulo);
-        const iM = h.indexOf("MERCADERISTA"), iS = h.indexOf("SUPERVISOR");
-        if (iM < 0 || iS < 0) return mapa;
-        filas.slice(1).forEach((f) => { if (limpiar(f[iM]) && limpiar(f[iS])) mapa.set(clave(f[iM]), limpiar(f[iS])); });
-        return mapa;
-      }
-
       function procesar(buffer, mapa) {
         const libro = XLSX.read(buffer, { type: "array" });
         const filas = XLSX.utils.sheet_to_json(libro.Sheets[libro.SheetNames[0]], { header: 1, raw: true, defval: "" });
         const h = filas[0].map(normTitulo);
         const col = (n) => h.indexOf(n);
         const iF = col("FECHA"), iH = col("HORA"), iS = col("SUPERVISOR"), iP = col("PDV"), iU = col("USUARIO"),
-              iV = col("VISITOELPDV"), iR = col("RESPONDIOELFORMULARIO"), iT = col("TENIAPERMISO"), iDP = col("DETALLEPERMISO");
+              iV = col("VISITOELPDV"), iR = col("RESPONDIOELFORMULARIO"), iT = col("TENIAPERMISO");
         if (iF < 0 || iU < 0 || iP < 0) throw new Error("El archivo no tiene las columnas Fecha, PDV y Usuario.");
+        // Columnas con datos personales que no deberían publicarse
+        const privadas = [["RUT", "Rut"], ["DETALLEPERMISO", "Detalle Permiso"]].filter(([k]) => h.includes(k)).map(([, n]) => n);
 
         const cats = h.map((t, i) => ({ t, i })).filter((c) => c.t.startsWith("EXISTEPRODUCTO")).map((c) => {
           const regla = CATEGORIAS.find(([k]) => c.t.includes(k));
@@ -239,7 +249,7 @@
           const v = {
             fecha, hora: iH >= 0 ? horaDe(f[iH]) : "", pdv: limpiar(f[iP]),
             visito: iV >= 0 ? siNo(f[iV]) === 1 : true, respondio, permiso,
-            detallePermiso: iDP >= 0 ? limpiar(f[iDP]) : "",
+            tipoPermiso: permiso ? tipoPermiso(f[iT]) : "",
             resp: respondio ? cats.map((c) => siNo(f[c.i])) : null
           };
           if (!mercs.has(k)) mercs.set(k, { clave: k, nombre: usuario, slug: slug(usuario), visitas: [] });
@@ -283,35 +293,45 @@
         }).sort((a, b) => (a.nombre === SIN_SUPERVISOR) - (b.nombre === SIN_SUPERVISOR) || a.nombre.localeCompare(b.nombre, "es"));
 
         const listaFechas = [...fechas].sort();
-        return { cats, mercs, sups, listaSups, visitas, fechas: listaFechas, salas: salas.size };
+        return { cats, mercs, sups, listaSups, visitas, fechas: listaFechas, salas: salas.size, privadas };
       }
 
-      function traer(archivo) {
-        return fetch(archivo, { cache: "no-cache" }).then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); });
+      // Solo el tipo de permiso, sin el motivo (licencia, desvinculación, etc.)
+      function tipoPermiso(v) {
+        const t = clave(v);
+        if (t.includes("diario") && t.includes("local")) return "Permiso diario y de local";
+        if (t.includes("diario")) return "Permiso diario";
+        if (t.includes("local")) return "Permiso de local";
+        return "Con permiso";
       }
 
       function cargar() {
-        Promise.all([traer(ARCHIVO_RESPUESTAS), traer(ARCHIVO_SUPERVISORES).catch(() => null)])
-          .then(([resp, sup]) => iniciar(resp, sup))
+        Promise.all([window.Comun.traer(ARCHIVO_RESPUESTAS), window.Comun.leerSupervisores()])
+          .then(([resp, mapa]) => iniciar(resp, mapa))
           .catch(() => mostrarAviso(location.protocol === "file:"
             ? "Estás abriendo la página desde tu computador, y el navegador no deja leer el Excel así. En GitHub Pages se carga solo. Para probarla aquí, abre el archivo con el botón."
             : `Revisa que el archivo se llame exactamente ${ARCHIVO_RESPUESTAS} y que esté en la misma carpeta que respuestas.html.`));
       }
 
-      function iniciar(buffer, bufferMapa) {
-        try { D = procesar(buffer, leerMapa(bufferMapa)); }
+      function iniciar(buffer, mapa) {
+        try { D = procesar(buffer, mapa || new Map()); }
         catch (e) { mostrarAviso(e.message); return; }
+        window.Comun.listo();
         $("aviso").hidden = true;
         $("app").hidden = false;
+        $("avisoPrivado").hidden = !D.privadas.length;
+        $("avisoPrivadoTexto").textContent = `Tiene la${D.privadas.length > 1 ? "s columnas" : " columna"} ${D.privadas.join(" y ")}. La página no las muestra, pero el archivo publicado queda descargable: bórralas del Excel antes de subirlo.`;
+        $("nCats").textContent = D.cats.length;
         pintarResumen();
         pintarSupervisores();
         leerHash();
       }
 
       function mostrarAviso(texto) {
+        window.Comun.listo();
         $("aviso").hidden = false;
         $("avisoTexto").textContent = texto;
-        $("periodo").textContent = "Sin datos";
+        $("fechaDatos").textContent = "Sin datos";
       }
 
       $("archivoLocal").addEventListener("change", (e) => {
@@ -322,11 +342,13 @@
       /* ================= Encabezado ================= */
 
       function pintarResumen() {
+        const resp = D.visitas.filter((v) => v.respondio).length;
         $("kVisitas").textContent = miles(D.visitas.length);
-        $("kRespondidos").textContent = miles(D.visitas.filter((v) => v.respondio).length);
+        $("kRespondidos").textContent = miles(resp);
+        $("kRespPct").textContent = D.visitas.length ? `${Math.round((resp / D.visitas.length) * 100)}% de las visitas` : "";
         $("kMerc").textContent = miles(D.mercs.size);
         $("kSalas").textContent = miles(D.salas);
-        $("periodo").textContent = `Del ${fechaLarga(D.fechas[0])} al ${fechaLarga(D.fechas[D.fechas.length - 1])}`;
+        window.Comun.marcarFecha(D.fechas[D.fechas.length - 1], `Período del ${fechaLarga(D.fechas[0])} al`);
       }
 
       /* ================= Navegación ================= */
@@ -340,9 +362,11 @@
       function leerHash() {
         const h = decodeURIComponent(location.hash.slice(1));
         vista.sup = null; vista.merc = null; vista.modo = "supervisores";
+        $("avisoNoEncontrado").hidden = true;
         if (h.startsWith("merc-")) {
           const m = [...D.mercs.values()].find((x) => x.slug === h.slice(5));
           if (m) { vista.modo = "merc"; vista.merc = m; vista.sup = D.sups.get(m.supervisor); }
+          else $("avisoNoEncontrado").hidden = false;
         } else if (h.startsWith("sup-")) {
           const s = D.listaSups.find((x) => x.slug === h.slice(4));
           if (s) { vista.modo = "equipo"; vista.sup = s; }
@@ -453,6 +477,7 @@
         $("btnAnterior").disabled = $("btnSiguiente").disabled = equipo.length < 2;
         $("mercSup").textContent = m.supervisor;
         $("mercNombre").textContent = m.nombre;
+        $("lnkPendientes").href = "pendientes.html#merc-" + m.slug;
 
         const sinForm = m.visitas.filter((v) => !v.respondio && !v.permiso).length;
         const permisos = m.visitas.filter((v) => v.permiso).length;
@@ -545,7 +570,7 @@
           const v = D.mercs.get(k).visitas[+idx];
           if (!v.respondio) {
             return `<strong>${fechaLarga(v.fecha)}${v.hora ? ", " + v.hora : ""}</strong><span>${esc(v.pdv)}</span>
-              <span>${v.permiso ? esc(v.detallePermiso || "Con permiso") : v.visito ? "Visitó la sala pero no respondió el formulario" : "No visitó la sala"}</span>`;
+              <span>${v.permiso ? esc(v.tipoPermiso) : v.visito ? "Visitó la sala pero no respondió el formulario" : "No visitó la sala"}</span>`;
           }
           const lista = D.cats.map((c, j) => `<span class="tip-fila"><span>${esc(c.nombre)}</span><b class="${v.resp[j] === 1 ? "tip-si" : "tip-no"}">${v.resp[j] === 1 ? "Sí" : v.resp[j] === 0 ? "No" : "Sin información"}</b></span>`).join("");
           return `<strong>${fechaLarga(v.fecha)}${v.hora ? ", " + v.hora : ""}</strong><span>${esc(v.pdv)}</span>${lista}
