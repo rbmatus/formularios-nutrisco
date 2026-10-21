@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Formularios pendientes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="sitio">
+    <div class="contenedor sitio__barra">
+      <a class="sitio__marca" href="index.html">
+        <span class="sitio__nombre">Panel canal tradicional</span>
+        <span class="sitio__cliente">Cliente Nutrisco</span>
+      </a>
+      <nav class="menu" aria-label="Secciones del sitio">
+        <a href="pendientes.html" aria-current="page">Formularios pendientes</a>
+        <a href="surtido.html">Matriz de productos</a>
+        <a href="respuestas.html">Respuestas góndola</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="titular">
+    <div class="contenedor">
+      <h1>Formularios pendientes</h1>
+      <p class="titular__meta" id="fechaDatos">Cargando datos…</p>
+      <p class="titular__desc">Formularios que no se realizaron. Quedan como justificados cuando tienen un permiso registrado; si no, siguen pendientes.</p>
+      <dl class="indicadores">
+        <div><dt>Formularios faltantes</dt><dd id="kFaltantes">–</dd></div>
+        <div><dt>Justificados</dt><dd id="kJustificados">–</dd><small id="kJustPct"></small></div>
+        <div class="destacado"><dt>Pendientes</dt><dd id="kPendientes">–</dd><small id="kPendPct"></small></div>
+        <div><dt>Mercaderistas con faltantes</dt><dd id="kMerc">–</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <main class="contenedor">
+
+    <div class="cargando" id="cargando" role="status"><span class="cargando__barra" aria-hidden="true"></span>Cargando datos…</div>
+
+    <section class="aviso" id="aviso" hidden>
+      <h2>No se pudo cargar datos.xlsx</h2>
+      <p id="avisoTexto"></p>
+      <label class="boton boton--principal">
+        Abrir el Excel desde mi computador
+        <input type="file" id="archivoLocal" accept=".xlsx,.xls" hidden>
+      </label>
+    </section>
+
+    <div id="app" hidden>
+
+      <div class="barra-sala">
+        <div class="combo">
+          <label for="buscaMerc" class="visualmente-oculto">Buscar mercaderista</label>
+          <input id="buscaMerc" type="search" autocomplete="off" placeholder="Busca un mercaderista por nombre"
+            role="combobox" aria-expanded="false" aria-controls="sugerencias" aria-autocomplete="list">
+          <ul id="sugerencias" class="combo__lista" role="listbox" hidden></ul>
+        </div>
+        <a class="boton boton--contorno" href="#todos">Ver todos los formularios</a>
+      </div>
+
+      <nav class="migas" id="migas" aria-label="Ubicación"></nav>
+
+      <section class="aviso aviso--info" id="avisoNoEncontrado" hidden>
+        <h2>Sin formularios faltantes</h2>
+        <p>Ese mercaderista no tiene formularios faltantes registrados en este período.</p>
+      </section>
+
+      <!-- Paso 1: supervisores -->
+      <section class="paso" id="vistaSupervisores" aria-labelledby="tituloSup" hidden>
+        <div class="paso__encabezado">
+          <h2 id="tituloSup">Pendientes por supervisor</h2>
+          <p>El número es la cantidad de formularios que siguen pendientes en el equipo de cada supervisor.</p>
+        </div>
+        <div class="cadenas" id="supervisores"></div>
+      </section>
+
+      <!-- Paso 2: detalle -->
+      <section class="paso" id="vistaDetalle" aria-labelledby="tituloDetalle" hidden>
+        <div class="paso__encabezado">
+          <h2 id="tituloDetalle"></h2>
+          <p id="subtituloDetalle"></p>
+        </div>
+
+        <div class="detalle__cuerpo">
+          <aside class="ranking" aria-labelledby="tituloRanking">
+            <h3 id="tituloRanking">Pendientes por mercaderista</h3>
+            <ol id="ranking"></ol>
+          </aside>
+
+          <div id="detalle">
+            <div class="filtros">
+              <div class="segmentos" role="group" aria-label="Filtrar por estado">
+                <button type="button" data-estado="pendiente" aria-pressed="true">Pendientes</button>
+                <button type="button" data-estado="justificado" aria-pressed="false">Justificados</button>
+                <button type="button" data-estado="todos" aria-pressed="false">Todos</button>
+              </div>
+              <label>
+                <span class="visualmente-oculto">Buscar mercaderista o local</span>
+                <input type="search" id="buscador" placeholder="Filtrar por mercaderista o local">
+              </label>
+            </div>
+
+            <div class="tabla-envoltura">
+              <table class="tabla tabla--tarjetas">
+                <thead>
+                  <tr>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Formulario</th>
+                    <th scope="col">Mercaderista</th>
+                    <th scope="col">Local</th>
+                    <th scope="col" class="col-super">Supervisor</th>
+                    <th scope="col">Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="cuerpoTabla"></tbody>
+              </table>
+              <p class="vacio" id="vacio" hidden></p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="pie contenedor">
+    <p>Fuente: datos.xlsx (registro de formularios faltantes). El supervisor se toma de supervisores.xlsx; si el mercaderista no está en esa lista, se usa el que trae el registro.</p>
+    <p>Para justificar un formulario, responde por correo o WhatsApp indicando fecha, mercaderista, local y motivo.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comun.js"></script>
+  <script>
+    const ARCHIVO_DATOS = "datos.xlsx";
+    const HOJA = "Faltantes";
+
+    (function () {
+      const C = window.Comun;
+      const $ = (id) => document.getElementById(id);
+      const { esc, limpiar, clave, slug, miles, plural } = C;
+
+      let D = null;
+      const vista = { modo: "supervisores", sup: null, todos: false };
+      let estadoFiltro = "pendiente";
+
+      /* ================= Lectura ================= */
+
+      const ALIAS = { FECHA: "fecha", FORMULARIO: "formulario", MERCADERISTA: "mercaderista", USUARIO: "mercaderista",
+        LOCAL: "local", PDV: "local", SUPERVISOR: "supervisor", PERMISO: "permiso", JUSTIFICACION: "permiso",
+        TOTAL: "cantidad", CANTIDAD: "cantidad" };
+
+      function fechaISO(v) {
+        if (typeof v === "number" && v > 20000) {
+          const d = new Date(Math.round((v - 25569) * 86400000));
+          return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+        }
+        const m = limpiar(v).match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+        return m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : "";
+      }
+
+      function procesar(buffer, mapa) {
+        const libro = XLSX.read(buffer, { type: "array" });
+        const hoja = libro.Sheets[HOJA] || libro.Sheets[libro.SheetNames[0]];
+        const filas = XLSX.utils.sheet_to_json(hoja, { raw: true, defval: "" });
+        const registros = [];
+        let ultimoSup = "", ultimaFecha = "";
+        filas.forEach((fila) => {
+          const r = {};
+          Object.keys(fila).forEach((k) => { const c = ALIAS[C.normTitulo(k)]; if (c) r[c] = fila[k]; });
+          const supRegistro = limpiar(r.supervisor) || ultimoSup;
+          const fecha = fechaISO(r.fecha) || ultimaFecha;
+          ultimoSup = supRegistro; ultimaFecha = fecha;
+          const merc = limpiar(r.mercaderista);
+          if (!merc && !limpiar(r.local)) return;
+          const cantidad = Math.max(1, parseInt(r.cantidad, 10) || 1);
+          for (let i = 0; i < cantidad; i++) {
+            registros.push({
+              fecha, formulario: limpiar(r.formulario) || "Formulario", mercaderista: merc, local: limpiar(r.local),
+              supervisor: mapa.get(clave(merc)) || supRegistro || C.SIN_SUPERVISOR,
+              permiso: limpiar(r.permiso)
+            });
+          }
+        });
+        registros.sort((a, b) => a.fecha.localeCompare(b.fecha));
+
+        const sups = new Map();
+        registros.forEach((r) => {
+          if (!sups.has(r.supervisor)) sups.set(r.supervisor, { nombre: r.supervisor, slug: slug(r.supervisor), registros: [] });
+          sups.get(r.supervisor).registros.push(r);
+        });
+        const listaSups = [...sups.values()].map((s) => {
+          s.pendientes = s.registros.filter((r) => !r.permiso).length;
+          return s;
+        }).sort((a, b) => (a.nombre === C.SIN_SUPERVISOR) - (b.nombre === C.SIN_SUPERVISOR) ||
+          b.pendientes - a.pendientes || a.nombre.localeCompare(b.nombre, "es"));
+
+        const mercs = new Map();
+        registros.forEach((r) => {
+          const k = slug(r.mercaderista);
+          if (!mercs.has(k)) mercs.set(k, { nombre: r.mercaderista, slug: k, supervisor: r.supervisor, total: 0, pendientes: 0 });
+          const m = mercs.get(k); m.total++; if (!r.permiso) m.pendientes++;
+        });
+
+        return { registros, sups, listaSups, mercs };
+      }
+
+      function cargar() {
+        Promise.all([C.traer(ARCHIVO_DATOS), C.leerSupervisores()])
+          .then(([buf, mapa]) => iniciar(buf, mapa))
+          .catch(() => mostrarAviso(location.protocol === "file:"
+            ? "Estás abriendo la página desde tu computador, y el navegador no deja leer el Excel así. En GitHub Pages se carga solo. Para probarla aquí, abre el archivo con el botón."
+            : `Revisa que el archivo se llame exactamente ${ARCHIVO_DATOS} y que esté en la misma carpeta que esta página.`));
+      }
+
+      function iniciar(buf, mapa) {
+        try { D = procesar(buf, mapa || new Map()); } catch (e) { mostrarAviso(e.message); return; }
+        C.listo();
+        $("aviso").hidden = true;
+        $("app").hidden = false;
+        pintarResumen();
+        pintarSupervisores();
+        leerHash();
+      }
+
+      function mostrarAviso(texto) {
+        C.listo();
+        $("aviso").hidden = false;
+        $("avisoTexto").textContent = texto;
+        $("fechaDatos").textContent = "Sin datos";
+      }
+
+      $("archivoLocal").addEventListener("change", (e) => {
+        const f = e.target.files[0];
+        if (f) f.arrayBuffer().then((b) => iniciar(b, new Map()));
+      });
+
+      /* ================= Resumen ================= */
+
+      function pintarResumen() {
+        const total = D.registros.length;
+        const pend = D.registros.filter((r) => !r.permiso).length;
+        const pctTxt = (n) => total ? `${Math.round((n / total) * 100)}% del total` : "";
+        $("kFaltantes").textContent = miles(total);
+        $("kJustificados").textContent = miles(total - pend);
+        $("kJustPct").textContent = pctTxt(total - pend);
+        $("kPendientes").textContent = miles(pend);
+        $("kPendPct").textContent = pctTxt(pend);
+        $("kMerc").textContent = miles(D.mercs.size);
+        C.marcarFecha(D.registros.length ? D.registros[D.registros.length - 1].fecha : "");
+      }
+
+      /* ================= Navegación ================= */
+
+      function leerHash() {
+        const h = decodeURIComponent(location.hash.slice(1));
+        vista.modo = "supervisores"; vista.sup = null; vista.todos = false;
+        $("avisoNoEncontrado").hidden = true;
+        let filtroMerc = "";
+        if (h === "todos") { vista.modo = "detalle"; vista.todos = true; }
+        else if (h.startsWith("sup-")) {
+          const s = D.listaSups.find((x) => x.slug === h.slice(4));
+          if (s) { vista.modo = "detalle"; vista.sup = s; }
+        } else if (h.startsWith("merc-")) {
+          const m = D.mercs.get(h.slice(5));
+          if (m) { vista.modo = "detalle"; vista.sup = D.sups.get(m.supervisor); filtroMerc = m.nombre; estadoFiltro = "todos"; }
+          else $("avisoNoEncontrado").hidden = false;
+        }
+        $("buscador").value = filtroMerc;
+        document.querySelectorAll(".segmentos button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.estado === estadoFiltro));
+        pintarVista();
+      }
+
+      window.addEventListener("hashchange", () => {
+        if (!D) return;
+        leerHash();
+        if ($("migas").getBoundingClientRect().top < 0) $("migas").scrollIntoView({ block: "start" });
+      });
+
+      function pintarVista() {
+        $("vistaSupervisores").hidden = vista.modo !== "supervisores";
+        $("vistaDetalle").hidden = vista.modo !== "detalle";
+        const partes = [vista.modo === "supervisores" ? `<span aria-current="page">Todos los supervisores</span>` : `<a href="#">Todos los supervisores</a>`];
+        if (vista.todos) partes.push(`<span aria-current="page">Todos los formularios</span>`);
+        if (vista.sup) partes.push(`<span aria-current="page">${esc(vista.sup.nombre)}</span>`);
+        $("migas").innerHTML = partes.join('<span class="migas__sep" aria-hidden="true">›</span>');
+        if (vista.modo === "detalle") pintarDetalle();
+        document.title = vista.sup ? `${vista.sup.nombre} – Formularios pendientes` : "Formularios pendientes";
+      }
+
+      /* ================= Paso 1: supervisores ================= */
+
+      function pintarSupervisores() {
+        const max = Math.max(1, ...D.listaSups.map((s) => s.pendientes));
+        $("supervisores").innerHTML = D.listaSups.map((s) => `
+          <a class="ficha ${s.pendientes ? "ficha--alerta" : "ficha--listo"}" href="#sup-${s.slug}">
+            <span class="ficha__numero">${s.pendientes || "✓"}</span>
+            <span class="ficha__nombre">${esc(s.nombre)}</span>
+            <span class="ficha__texto">${s.pendientes ? `pendientes de ${s.registros.length} faltantes` : `${s.registros.length} de ${s.registros.length} justificados`}</span>
+            <span class="ficha__pie"><span class="ficha__barra" aria-hidden="true"><span style="width:${(s.pendientes / max) * 100}%"></span></span></span>
+          </a>`).join("");
+      }
+
+      /* ================= Paso 2: detalle ================= */
+
+      function pintarDetalle() {
+        const delGrupo = vista.todos ? D.registros : vista.sup.registros;
+        const pend = delGrupo.filter((r) => !r.permiso);
+        $("detalle").classList.toggle("detalle--todos", vista.todos);
+        $("tituloDetalle").textContent = vista.todos ? "Todos los formularios" : vista.sup.nombre;
+        $("subtituloDetalle").textContent = `${plural(pend.length, "pendiente", "pendientes")} de ${plural(delGrupo.length, "formulario faltante", "formularios faltantes")}.`;
+
+        const conteo = {};
+        pend.forEach((r) => { conteo[r.mercaderista] = (conteo[r.mercaderista] || 0) + 1; });
+        const ranking = Object.entries(conteo).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "es"));
+        const tope = ranking.length ? ranking[0][1] : 1;
+        const filtro = $("buscador").value.trim();
+        $("ranking").innerHTML = ranking.length
+          ? ranking.map(([nombre, n]) => `
+              <li><button type="button" data-merc="${esc(nombre)}" aria-pressed="${filtro === nombre}">
+                <span class="ranking__nombre">${esc(nombre)}</span><span class="ranking__n">${n}</span>
+                <span class="ranking__barra" aria-hidden="true"><span style="width:${(n / tope) * 100}%"></span></span>
+              </button></li>`).join("")
+          : `<li class="ranking__vacio">Sin pendientes.</li>`;
+
+        const q = clave(filtro);
+        const visibles = delGrupo.filter((r) =>
+          (estadoFiltro === "todos" || (estadoFiltro === "pendiente" ? !r.permiso : !!r.permiso)) &&
+          (!q || clave(r.mercaderista + " " + r.local).includes(q)));
+
+        $("cuerpoTabla").innerHTML = visibles.map((r) => `
+          <tr class="${r.permiso ? "fila--lista" : "fila--pendiente"}">
+            <td data-etiqueta="Fecha" class="celda-fecha">${r.fecha ? C.fechaLarga(r.fecha) : ""}</td>
+            <td data-etiqueta="Formulario"><span class="etiqueta-form">${esc(r.formulario)}</span></td>
+            <td data-etiqueta="Mercaderista" class="celda-merc"><span>${esc(r.mercaderista)}<br><a href="respuestas.html#merc-${slug(r.mercaderista)}">Ver sus respuestas</a></span></td>
+            <td data-etiqueta="Local" class="celda-local">${r.local ? esc(r.local) : '<span class="sin-dato">Sin local registrado</span>'}</td>
+            <td data-etiqueta="Supervisor" class="col-super">${esc(r.supervisor)}</td>
+            <td data-etiqueta="Estado">${r.permiso ? `<span class="estado estado--ok">${esc(r.permiso)}</span>` : `<span class="estado estado--pend">Pendiente</span>`}</td>
+          </tr>`).join("");
+
+        $("vacio").hidden = visibles.length > 0;
+        $("vacio").textContent = q ? "Ningún formulario coincide con el filtro." :
+          estadoFiltro === "pendiente" ? "No quedan formularios pendientes." : "No hay formularios para mostrar.";
+      }
+
+      document.querySelector(".segmentos").addEventListener("click", (e) => {
+        const b = e.target.closest("button"); if (!b) return;
+        estadoFiltro = b.dataset.estado;
+        document.querySelectorAll(".segmentos button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+        pintarDetalle();
+      });
+      $("ranking").addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-merc]"); if (!b) return;
+        $("buscador").value = $("buscador").value === b.dataset.merc ? "" : b.dataset.merc;
+        pintarDetalle();
+      });
+      $("buscador").addEventListener("input", pintarDetalle);
+
+      /* ================= Buscador de mercaderista ================= */
+
+      const input = $("buscaMerc"), lista = $("sugerencias");
+      let coincidencias = [], activa = -1;
+      function buscar() {
+        const q = clave(input.value);
+        if (!q) { cerrar(); return; }
+        coincidencias = [...D.mercs.values()].filter((m) => clave(m.nombre).includes(q))
+          .sort((a, b) => a.nombre.localeCompare(b.nombre, "es")).slice(0, 8);
+        activa = coincidencias.length ? 0 : -1;
+        pintarSug();
+      }
+      function pintarSug() {
+        lista.innerHTML = coincidencias.length
+          ? coincidencias.map((m, i) => `<li role="option" id="opcion-${i}" data-i="${i}" aria-selected="${i === activa}">
+              <span class="combo__nombre">${esc(m.nombre)}</span>
+              <span class="combo__detalle"><span class="etiqueta-cadena">${esc(m.supervisor)}</span> ${plural(m.pendientes, "pendiente", "pendientes")}</span></li>`).join("")
+          : `<li class="combo__vacio">No hay mercaderistas con ese nombre entre los faltantes.</li>`;
+        lista.hidden = false;
+        input.setAttribute("aria-expanded", "true");
+        if (activa >= 0) input.setAttribute("aria-activedescendant", "opcion-" + activa); else input.removeAttribute("aria-activedescendant");
+      }
+      function cerrar() { lista.hidden = true; input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); }
+      function elegir(i) {
+        const m = coincidencias[i]; if (!m) return;
+        input.value = ""; cerrar(); input.blur();
+        location.hash = "#merc-" + m.slug;
+      }
+      input.addEventListener("input", buscar);
+      input.addEventListener("keydown", (e) => {
+        if (lista.hidden && e.key !== "ArrowDown") return;
+        if (e.key === "ArrowDown") { e.preventDefault(); if (lista.hidden) { buscar(); return; } activa = Math.min(activa + 1, coincidencias.length - 1); pintarSug(); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); activa = Math.max(activa - 1, 0); pintarSug(); }
+        else if (e.key === "Enter") { e.preventDefault(); elegir(activa); }
+        else if (e.key === "Escape") cerrar();
+      });
+      lista.addEventListener("mousedown", (e) => e.preventDefault());
+      lista.addEventListener("click", (e) => { const li = e.target.closest("li[data-i]"); if (li) elegir(+li.dataset.i); });
+      input.addEventListener("blur", cerrar);
+
+      cargar();
+    })();
+  </script>
+</body>
+</html>
