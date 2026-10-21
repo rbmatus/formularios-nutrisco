@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Respuestas Gestión Góndola</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="cabecera">
+    <div class="contenedor">
+      <nav class="menu" aria-label="Secciones del sitio">
+        <a href="index.html">Formularios pendientes</a>
+        <a href="surtido.html">Matriz de productos</a>
+        <a href="respuestas.html" aria-current="page">Respuestas góndola</a>
+      </nav>
+      <p class="cabecera__cliente">Cliente Nutrisco <span id="periodo">Cargando datos…</span></p>
+      <h1 class="cabecera__titulo">Respuestas<br>Gestión Góndola</h1>
+      <svg class="pincelada" viewBox="0 0 420 26" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M4 16 C 60 6, 130 4, 210 9 S 360 20, 416 8 L 414 15 C 360 26, 290 22, 210 17 S 70 12, 6 22 Z"/>
+      </svg>
+      <p class="cabecera__frase">Cómo responde cada mercaderista si existe o no cada categoría en la góndola. Es para mirar patrones, no para calificar.</p>
+      <dl class="resumen resumen--4">
+        <div><dt>Visitas</dt><dd id="kVisitas">–</dd></div>
+        <div><dt>Formularios respondidos</dt><dd id="kRespondidos">–</dd></div>
+        <div><dt>Mercaderistas</dt><dd id="kMerc">–</dd></div>
+        <div><dt>Salas</dt><dd id="kSalas">–</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <main class="contenedor">
+
+    <section class="aviso" id="aviso" hidden>
+      <h2>No se pudo cargar respuestas.xlsx</h2>
+      <p id="avisoTexto"></p>
+      <label class="boton boton--principal">
+        Abrir el Excel de respuestas desde mi computador
+        <input type="file" id="archivoLocal" accept=".xlsx,.xls" hidden>
+      </label>
+    </section>
+
+    <div id="app" hidden>
+
+      <div class="barra-sala">
+        <div class="combo">
+          <label for="buscaMerc" class="visualmente-oculto">Buscar mercaderista</label>
+          <input id="buscaMerc" type="search" autocomplete="off" placeholder="Busca un mercaderista por nombre"
+            role="combobox" aria-expanded="false" aria-controls="sugerencias" aria-autocomplete="list">
+          <ul id="sugerencias" class="combo__lista" role="listbox" hidden></ul>
+        </div>
+      </div>
+
+      <nav class="migas" id="migas" aria-label="Ubicación"></nav>
+
+      <!-- Paso 1: supervisores -->
+      <section class="bloque paso" id="vistaSupervisores" aria-labelledby="tituloSup" hidden>
+        <div class="paso__encabezado">
+          <h2 id="tituloSup">Elige un supervisor</h2>
+          <p>Cada ficha muestra cuántos mercaderistas tiene el supervisor y cuántas visitas tuvieron formulario respondido.</p>
+        </div>
+        <div class="cadenas" id="supervisores"></div>
+      </section>
+
+      <!-- Paso 2: equipo -->
+      <section class="bloque paso" id="vistaEquipo" aria-labelledby="tituloEquipo" hidden>
+        <div class="paso__encabezado">
+          <h2 id="tituloEquipo"></h2>
+          <p id="subtituloEquipo"></p>
+        </div>
+
+        <div class="calor-ayuda">
+          <div class="leyenda" aria-hidden="true">
+            <span>Responde “Sí”</span>
+            <span class="leyenda__escala"><i class="c0"></i><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><i class="c5"></i><i class="c6"></i></span>
+            <span>0%</span><span>100%</span>
+          </div>
+          <p>Cada celda es el porcentaje de visitas en que el mercaderista respondió que <strong>sí existe</strong> la categoría. “Igual a la anterior” es cuántas veces respondió exactamente lo mismo que en su visita previa a esa sala: algo de repetición es normal, sirve para comparar dentro del equipo. Haz clic en un título para ordenar y en un nombre para ver el detalle.</p>
+        </div>
+
+        <div class="calor-envoltura">
+          <table class="calor" id="tablaEquipo"></table>
+        </div>
+      </section>
+
+      <!-- Paso 3: mercaderista -->
+      <section class="bloque paso" id="vistaMerc" aria-labelledby="mercNombre" hidden>
+        <div class="selector">
+          <button type="button" class="selector__flecha" id="btnAnterior" aria-label="Mercaderista anterior del equipo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <span class="selector__posicion" id="posicion"></span>
+          <button type="button" class="selector__flecha" id="btnSiguiente" aria-label="Mercaderista siguiente del equipo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <article class="ficha-sala">
+          <div class="ficha-sala__cabeza">
+            <div>
+              <p class="ficha-sala__meta"><span class="etiqueta-cadena" id="mercSup"></span></p>
+              <h2 id="mercNombre"></h2>
+            </div>
+            <div class="ficha-sala__acciones">
+              <button type="button" class="boton boton--principal" id="btnCopiar">Copiar link de este mercaderista</button>
+            </div>
+          </div>
+
+          <dl class="cifras" id="mercCifras"></dl>
+
+          <h3 class="subtitulo">Respuestas por sala</h3>
+          <p class="nota">Porcentaje de visitas en que respondió “Sí” para cada categoría, separado por sala.</p>
+          <div class="calor-envoltura">
+            <table class="calor" id="tablaSalas"></table>
+          </div>
+
+          <h3 class="subtitulo">Día a día</h3>
+          <p class="nota">Cada celda es una visita: el número es cuántas de las 9 categorías respondió que sí existen. El borde punteado marca las visitas con <strong>exactamente las mismas respuestas</strong> que la visita anterior a esa sala. “–” es visita sin formulario y “P” es permiso. Pasa el mouse o toca una celda para ver el detalle.</p>
+          <div class="calor-envoltura">
+            <table class="calor calor--dias" id="tablaDias"></table>
+          </div>
+        </article>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="pie contenedor">
+    <p>Para actualizar: exporta las respuestas, borra la columna Rut, guarda el archivo como respuestas.xlsx y súbelo reemplazando el anterior.</p>
+  </footer>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+  <div class="aviso-flotante" id="avisoFlotante" role="status" aria-live="polite" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    /* ===== Configuración ===== */
+    const ARCHIVO_RESPUESTAS = "respuestas.xlsx";
+    const ARCHIVO_SUPERVISORES = "supervisores.xlsx";   // opcional: MERCADERISTA / SUPERVISOR
+    const SIN_SUPERVISOR = "Sin supervisor";
+
+    // Nombres cortos de las categorías (se reconocen por el texto de la pregunta)
+    const CATEGORIAS = [
+      ["CHORITOSYOTROSMARISCOS", "Mariscos en conserva"],
+      ["CHORITOSONICE", "Choritos on ice"],
+      ["PESCADOONICE", "Pescado on ice"],
+      ["JUREL", "Jurel"],
+      ["ATUN", "Atún"],
+      ["SNACKFLIP", "Snack Flip"],
+      ["SNACKDULCE", "Snack dulce"],
+      ["BEBESTIBLE", "Bebestible"],
+      ["FRUTASCONGELADAS", "Frutas congeladas"]
+    ];
+
+    (function () {
+      const $ = (id) => document.getElementById(id);
+      const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      const limpiar = (t) => String(t == null ? "" : t).replace(/ /g, " ").replace(/\s+/g, " ").trim();
+      const sinTildes = (t) => String(t).normalize("NFD").replace(/[̀-ͯ]/g, "");
+      const normTitulo = (t) => sinTildes(t).toUpperCase().replace(/[^A-Z0-9]/g, "");
+      const clave = (t) => sinTildes(limpiar(t)).toLowerCase();
+      const slug = (t) => clave(t).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const miles = (n) => n.toLocaleString("es-CL");
+      const plural = (n, uno, varios) => `${miles(n)} ${n === 1 ? uno : varios}`;
+      const pct = (x) => x == null ? "–" : Math.round(x * 100) + "%";
+      const suave = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
+      const tono = (x) => x == null ? "" : "c" + Math.min(6, Math.floor(x * 7));   // 7 tonos de azul
+
+      let D = null;
+      const vista = { modo: "supervisores", sup: null, merc: null };
+      const orden = { col: "nombre", dir: 1 };
+
+      /* ================= Lectura ================= */
+
+      function fechaDe(v) {
+        if (typeof v === "number" && v > 20000) {
+          const d = new Date(Math.round((v - 25569) * 86400000));
+          return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+        }
+        const m = limpiar(v).match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+        if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+        const iso = limpiar(v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        return iso ? iso[0] : null;
+      }
+      function horaDe(v) {
+        if (typeof v === "number") {
+          const min = Math.round((v % 1) * 1440);
+          return `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+        }
+        const m = limpiar(v).match(/^(\d{1,2}):(\d{2})/);
+        return m ? `${m[1].padStart(2, "0")}:${m[2]}` : "";
+      }
+      const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+      const fechaLarga = (f) => `${f.slice(8, 10)}-${f.slice(5, 7)}-${f.slice(0, 4)}`;
+      const siNo = (v) => { const t = clave(v); return t.startsWith("si") ? 1 : t === "no" ? 0 : null; };
+
+      function leerMapa(buffer) {
+        const mapa = new Map();
+        if (!buffer) return mapa;
+        const libro = XLSX.read(buffer, { type: "array" });
+        const filas = XLSX.utils.sheet_to_json(libro.Sheets[libro.SheetNames[0]], { header: 1, defval: "" });
+        const h = (filas[0] || []).map(normTitulo);
+        const iM = h.indexOf("MERCADERISTA"), iS = h.indexOf("SUPERVISOR");
+        if (iM < 0 || iS < 0) return mapa;
+        filas.slice(1).forEach((f) => { if (limpiar(f[iM]) && limpiar(f[iS])) mapa.set(clave(f[iM]), limpiar(f[iS])); });
+        return mapa;
+      }
+
+      function procesar(buffer, mapa) {
+        const libro = XLSX.read(buffer, { type: "array" });
+        const filas = XLSX.utils.sheet_to_json(libro.Sheets[libro.SheetNames[0]], { header: 1, raw: true, defval: "" });
+        const h = filas[0].map(normTitulo);
+        const col = (n) => h.indexOf(n);
+        const iF = col("FECHA"), iH = col("HORA"), iS = col("SUPERVISOR"), iP = col("PDV"), iU = col("USUARIO"),
+              iV = col("VISITOELPDV"), iR = col("RESPONDIOELFORMULARIO"), iT = col("TENIAPERMISO"), iDP = col("DETALLEPERMISO");
+        if (iF < 0 || iU < 0 || iP < 0) throw new Error("El archivo no tiene las columnas Fecha, PDV y Usuario.");
+
+        const cats = h.map((t, i) => ({ t, i })).filter((c) => c.t.startsWith("EXISTEPRODUCTO")).map((c) => {
+          const regla = CATEGORIAS.find(([k]) => c.t.includes(k));
+          const original = limpiar(filas[0][c.i]).replace(/^¿?existe producto/i, "").replace(/\?.*$/, "").trim();
+          return { i: c.i, nombre: regla ? regla[1] : original };
+        });
+
+        const mercs = new Map(), supDelExport = new Map(), fechas = new Set(), salas = new Set();
+        const visitas = [];
+        filas.slice(1).forEach((f) => {
+          const fecha = fechaDe(f[iF]);
+          const usuario = limpiar(f[iU]);
+          if (!fecha || !usuario) return;     // descarta filas de filtros o vacías
+          const k = clave(usuario);
+          const supExport = iS >= 0 ? limpiar(f[iS]) : "";
+          if (supExport && !supDelExport.has(k)) supDelExport.set(k, supExport);
+          const respondio = iR >= 0 ? siNo(f[iR]) === 1 : true;
+          const permiso = iT >= 0 && siNo(f[iT]) === 1;
+          const v = {
+            fecha, hora: iH >= 0 ? horaDe(f[iH]) : "", pdv: limpiar(f[iP]),
+            visito: iV >= 0 ? siNo(f[iV]) === 1 : true, respondio, permiso,
+            detallePermiso: iDP >= 0 ? limpiar(f[iDP]) : "",
+            resp: respondio ? cats.map((c) => siNo(f[c.i])) : null
+          };
+          if (!mercs.has(k)) mercs.set(k, { clave: k, nombre: usuario, slug: slug(usuario), visitas: [] });
+          mercs.get(k).visitas.push(v);
+          visitas.push(v); fechas.add(fecha); salas.add(v.pdv);
+        });
+
+        // Métricas por mercaderista
+        mercs.forEach((m) => {
+          m.supervisor = mapa.get(m.clave) || supDelExport.get(m.clave) || SIN_SUPERVISOR;
+          m.visitas.sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
+          m.respondidas = m.visitas.filter((v) => v.respondio);
+          m.cat = cats.map((c, j) => {
+            const vals = m.respondidas.map((v) => v.resp[j]).filter((x) => x != null);
+            return { si: vals.filter((x) => x === 1).length, n: vals.length, p: vals.length ? vals.filter((x) => x === 1).length / vals.length : null };
+          });
+          // Repetición: misma respuesta que la visita anterior a la misma sala
+          const ultima = new Map();
+          let comparadas = 0, iguales = 0;
+          m.respondidas.forEach((v) => {
+            const firma = v.resp.map((x) => (x == null ? "x" : x)).join("");
+            if (ultima.has(v.pdv)) { comparadas++; v.igual = ultima.get(v.pdv) === firma; if (v.igual) iguales++; }
+            ultima.set(v.pdv, firma);
+          });
+          m.repeticion = comparadas ? iguales / comparadas : null;
+          m.comparadas = comparadas; m.iguales = iguales;
+          m.pdvs = [...new Set(m.visitas.map((v) => v.pdv))].sort((a, b) => a.localeCompare(b, "es"));
+        });
+
+        // Supervisores
+        const sups = new Map();
+        mercs.forEach((m) => {
+          if (!sups.has(m.supervisor)) sups.set(m.supervisor, { nombre: m.supervisor, slug: slug(m.supervisor), mercs: [] });
+          sups.get(m.supervisor).mercs.push(m);
+        });
+        const listaSups = [...sups.values()].map((s) => {
+          s.mercs.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+          s.visitas = s.mercs.reduce((t, m) => t + m.visitas.length, 0);
+          s.respondidas = s.mercs.reduce((t, m) => t + m.respondidas.length, 0);
+          return s;
+        }).sort((a, b) => (a.nombre === SIN_SUPERVISOR) - (b.nombre === SIN_SUPERVISOR) || a.nombre.localeCompare(b.nombre, "es"));
+
+        const listaFechas = [...fechas].sort();
+        return { cats, mercs, sups, listaSups, visitas, fechas: listaFechas, salas: salas.size };
+      }
+
+      function traer(archivo) {
+        return fetch(archivo, { cache: "no-cache" }).then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); });
+      }
+
+      function cargar() {
+        Promise.all([traer(ARCHIVO_RESPUESTAS), traer(ARCHIVO_SUPERVISORES).catch(() => null)])
+          .then(([resp, sup]) => iniciar(resp, sup))
+          .catch(() => mostrarAviso(location.protocol === "file:"
+            ? "Estás abriendo la página desde tu computador, y el navegador no deja leer el Excel así. En GitHub Pages se carga solo. Para probarla aquí, abre el archivo con el botón."
+            : `Revisa que el archivo se llame exactamente ${ARCHIVO_RESPUESTAS} y que esté en la misma carpeta que respuestas.html.`));
+      }
+
+      function iniciar(buffer, bufferMapa) {
+        try { D = procesar(buffer, leerMapa(bufferMapa)); }
+        catch (e) { mostrarAviso(e.message); return; }
+        $("aviso").hidden = true;
+        $("app").hidden = false;
+        pintarResumen();
+        pintarSupervisores();
+        leerHash();
+      }
+
+      function mostrarAviso(texto) {
+        $("aviso").hidden = false;
+        $("avisoTexto").textContent = texto;
+        $("periodo").textContent = "Sin datos";
+      }
+
+      $("archivoLocal").addEventListener("change", (e) => {
+        const archivo = e.target.files[0];
+        if (archivo) archivo.arrayBuffer().then((b) => iniciar(b, null));
+      });
+
+      /* ================= Encabezado ================= */
+
+      function pintarResumen() {
+        $("kVisitas").textContent = miles(D.visitas.length);
+        $("kRespondidos").textContent = miles(D.visitas.filter((v) => v.respondio).length);
+        $("kMerc").textContent = miles(D.mercs.size);
+        $("kSalas").textContent = miles(D.salas);
+        $("periodo").textContent = `Del ${fechaLarga(D.fechas[0])} al ${fechaLarga(D.fechas[D.fechas.length - 1])}`;
+      }
+
+      /* ================= Navegación ================= */
+
+      function irA(hash) {
+        if (location.hash !== hash) location.hash = hash; else leerHash();
+      }
+      const hashSup = (s) => "#sup-" + s.slug;
+      const hashMerc = (m) => "#merc-" + m.slug;
+
+      function leerHash() {
+        const h = decodeURIComponent(location.hash.slice(1));
+        vista.sup = null; vista.merc = null; vista.modo = "supervisores";
+        if (h.startsWith("merc-")) {
+          const m = [...D.mercs.values()].find((x) => x.slug === h.slice(5));
+          if (m) { vista.modo = "merc"; vista.merc = m; vista.sup = D.sups.get(m.supervisor); }
+        } else if (h.startsWith("sup-")) {
+          const s = D.listaSups.find((x) => x.slug === h.slice(4));
+          if (s) { vista.modo = "equipo"; vista.sup = s; }
+        }
+        pintarVista();
+      }
+
+      window.addEventListener("hashchange", () => {
+        if (!D) return;
+        leerHash();
+        if ($("migas").getBoundingClientRect().top < 0) $("migas").scrollIntoView({ behavior: suave(), block: "start" });
+      });
+
+      function pintarVista() {
+        $("vistaSupervisores").hidden = vista.modo !== "supervisores";
+        $("vistaEquipo").hidden = vista.modo !== "equipo";
+        $("vistaMerc").hidden = vista.modo !== "merc";
+
+        const partes = [vista.modo === "supervisores" ? `<span aria-current="page">Todos los supervisores</span>` : `<a href="#">Todos los supervisores</a>`];
+        if (vista.sup) partes.push(vista.modo === "equipo"
+          ? `<span aria-current="page">${esc(vista.sup.nombre)}</span>`
+          : `<a href="${hashSup(vista.sup)}">${esc(vista.sup.nombre)}</a>`);
+        if (vista.merc) partes.push(`<span aria-current="page">${esc(vista.merc.nombre)}</span>`);
+        $("migas").innerHTML = partes.join('<span class="migas__sep" aria-hidden="true">›</span>');
+
+        if (vista.modo === "equipo") pintarEquipo();
+        if (vista.modo === "merc") pintarMerc();
+        document.title = vista.merc ? `${vista.merc.nombre} – Respuestas góndola`
+          : vista.sup ? `${vista.sup.nombre} – Respuestas góndola` : "Respuestas Gestión Góndola";
+      }
+
+      /* ================= Paso 1: supervisores ================= */
+
+      function pintarSupervisores() {
+        $("supervisores").innerHTML = D.listaSups.map((s) => `
+          <a class="ficha ficha--cadena" href="${hashSup(s)}">
+            <span class="ficha__numero">${s.mercs.length}</span>
+            <span class="ficha__nombre">${esc(s.nombre)}</span>
+            <span class="ficha__texto">${s.mercs.length === 1 ? "mercaderista" : "mercaderistas"}</span>
+            <span class="ficha__pie">
+              <span>${miles(s.respondidas)} de ${miles(s.visitas)} visitas con formulario</span>
+              <span class="ficha__barra" aria-hidden="true"><span style="width:${(s.respondidas / s.visitas) * 100}%"></span></span>
+            </span>
+          </a>`).join("");
+      }
+
+      /* ================= Paso 2: equipo ================= */
+
+      function valorOrden(m, c) {
+        if (c === "nombre") return m.nombre;
+        if (c === "resp") return m.respondidas.length;
+        if (c === "rep") return m.repeticion == null ? -1 : m.repeticion;
+        const p = m.cat[+c.slice(1)].p; return p == null ? -1 : p;
+      }
+
+      function pintarEquipo() {
+        const s = vista.sup;
+        $("tituloEquipo").textContent = s.nombre;
+        $("subtituloEquipo").textContent = `${plural(s.mercs.length, "mercaderista", "mercaderistas")}, ${miles(s.respondidas)} formularios respondidos de ${miles(s.visitas)} visitas.`;
+
+        const mercs = [...s.mercs].sort((a, b) => {
+          const va = valorOrden(a, orden.col), vb = valorOrden(b, orden.col);
+          const r = typeof va === "number" ? va - vb : va.localeCompare(vb, "es");
+          return r * orden.dir || a.nombre.localeCompare(b.nombre, "es");
+        });
+        const th = (c, texto, clase = "") =>
+          `<th scope="col" class="${clase}" aria-sort="${orden.col === c ? (orden.dir === 1 ? "ascending" : "descending") : "none"}">
+             <button type="button" data-orden="${c}">${texto}<span class="orden" aria-hidden="true"></span></button></th>`;
+
+        $("tablaEquipo").innerHTML = `
+          <thead><tr>
+            ${th("nombre", "Mercaderista", "calor__fija")}
+            ${th("resp", "Formularios", "calor__num")}
+            ${D.cats.map((c, j) => th("c" + j, esc(c.nombre), "calor__cat")).join("")}
+            ${th("rep", "Igual a la anterior", "calor__num")}
+          </tr></thead>
+          <tbody>
+            ${mercs.map((m) => `
+              <tr>
+                <th scope="row" class="calor__fija"><a href="${hashMerc(m)}">${esc(m.nombre)}</a></th>
+                <td class="calor__num">${miles(m.respondidas.length)}</td>
+                ${m.cat.map((c, j) => `<td class="calor__celda ${tono(c.p)}" data-m="${esc(m.clave)}" data-c="${j}">${pct(c.p)}</td>`).join("")}
+                <td class="calor__num" data-rep="${esc(m.clave)}">${repeticionHtml(m)}</td>
+              </tr>`).join("")}
+          </tbody>`;
+      }
+
+      function repeticionHtml(m) {
+        if (m.repeticion == null) return '<span class="sin-dato">–</span>';
+        return `<span class="mini"><span class="mini__n">${pct(m.repeticion)}</span><span class="mini__pista" aria-hidden="true"><span style="width:${m.repeticion * 100}%"></span></span></span>`;
+      }
+
+      $("tablaEquipo").addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-orden]");
+        if (!b) return;
+        const c = b.dataset.orden;
+        orden.dir = orden.col === c ? -orden.dir : (c === "nombre" ? 1 : -1);
+        orden.col = c;
+        pintarEquipo();
+      });
+
+      /* ================= Paso 3: mercaderista ================= */
+
+      function pintarMerc() {
+        const m = vista.merc, s = vista.sup;
+        const equipo = s.mercs, i = equipo.indexOf(m);
+        $("posicion").textContent = `${i + 1} de ${equipo.length} en el equipo de ${s.nombre}`;
+        $("btnAnterior").disabled = $("btnSiguiente").disabled = equipo.length < 2;
+        $("mercSup").textContent = m.supervisor;
+        $("mercNombre").textContent = m.nombre;
+
+        const sinForm = m.visitas.filter((v) => !v.respondio && !v.permiso).length;
+        const permisos = m.visitas.filter((v) => v.permiso).length;
+        $("mercCifras").innerHTML = `
+          <div><dt>Visitas</dt><dd>${miles(m.visitas.length)}</dd></div>
+          <div><dt>Formularios respondidos</dt><dd>${miles(m.respondidas.length)}</dd></div>
+          <div><dt>Sin formulario</dt><dd>${miles(sinForm)}</dd></div>
+          <div><dt>Con permiso</dt><dd>${miles(permisos)}</dd></div>
+          <div><dt>Salas</dt><dd>${m.pdvs.length}</dd></div>
+          <div><dt>Igual a la visita anterior</dt><dd>${m.repeticion == null ? "–" : pct(m.repeticion)}<small>${m.comparadas ? `${m.iguales} de ${m.comparadas}` : ""}</small></dd></div>`;
+
+        // Por sala
+        $("tablaSalas").innerHTML = `
+          <thead><tr>
+            <th scope="col" class="calor__fija">Sala</th>
+            <th scope="col" class="calor__num">Formularios</th>
+            ${D.cats.map((c) => `<th scope="col" class="calor__cat">${esc(c.nombre)}</th>`).join("")}
+          </tr></thead>
+          <tbody>
+            ${m.pdvs.map((pdv) => {
+              const vs = m.respondidas.filter((v) => v.pdv === pdv);
+              return `<tr>
+                <th scope="row" class="calor__fija">${esc(pdv)}</th>
+                <td class="calor__num">${vs.length}</td>
+                ${D.cats.map((c, j) => {
+                  const vals = vs.map((v) => v.resp[j]).filter((x) => x != null);
+                  const si = vals.filter((x) => x === 1).length;
+                  const p = vals.length ? si / vals.length : null;
+                  return `<td class="calor__celda ${tono(p)}" data-tip="${esc(`${c.nombre}|${pdv}|${si}|${vals.length}`)}">${pct(p)}</td>`;
+                }).join("")}
+              </tr>`;
+            }).join("")}
+          </tbody>`;
+
+        // Día a día
+        const fechas = D.fechas;
+        $("tablaDias").innerHTML = `
+          <thead><tr>
+            <th scope="col" class="calor__fija">Sala</th>
+            ${fechas.map((f) => `<th scope="col" class="calor__dia" title="${fechaLarga(f)}"><span>${+f.slice(8, 10)}</span><small>${MESES[+f.slice(5, 7) - 1]}</small></th>`).join("")}
+          </tr></thead>
+          <tbody>
+            ${m.pdvs.map((pdv) => `<tr>
+              <th scope="row" class="calor__fija">${esc(pdv)}</th>
+              ${fechas.map((f) => {
+                const vs = m.visitas.filter((v) => v.pdv === pdv && v.fecha === f);
+                if (!vs.length) return `<td class="dia dia--nada"></td>`;
+                const v = vs[vs.length - 1];
+                const ref = `${m.clave}|${m.visitas.indexOf(v)}`;
+                if (v.respondio) {
+                  const si = v.resp.filter((x) => x === 1).length;
+                  return `<td class="dia calor__celda ${tono(si / D.cats.length)}${v.igual ? " dia--igual" : ""}" data-visita="${esc(ref)}">${si}${vs.length > 1 ? "<sup>+</sup>" : ""}</td>`;
+                }
+                return `<td class="dia ${v.permiso ? "dia--permiso" : "dia--sin"}" data-visita="${esc(ref)}">${v.permiso ? "P" : "–"}</td>`;
+              }).join("")}
+            </tr>`).join("")}
+          </tbody>`;
+      }
+
+      function moverMerc(paso) {
+        const equipo = vista.sup.mercs, i = equipo.indexOf(vista.merc);
+        irA(hashMerc(equipo[(i + paso + equipo.length) % equipo.length]));
+      }
+      $("btnAnterior").addEventListener("click", () => moverMerc(-1));
+      $("btnSiguiente").addEventListener("click", () => moverMerc(1));
+
+      function avisar(texto) {
+        const a = $("avisoFlotante");
+        a.textContent = texto; a.hidden = false;
+        clearTimeout(avisar.t);
+        avisar.t = setTimeout(() => { a.hidden = true; }, 2200);
+      }
+      $("btnCopiar").addEventListener("click", () => {
+        const link = location.href.split("#")[0] + hashMerc(vista.merc);
+        const listo = () => avisar("Link copiado. Pégalo en WhatsApp o en un correo.");
+        (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(listo).catch(() => {
+          const t = document.createElement("textarea"); t.value = link; document.body.appendChild(t); t.select();
+          try { document.execCommand("copy"); listo(); } catch (e) { prompt("Copia este link:", link); }
+          t.remove();
+        });
+      });
+
+      /* ================= Detalle al pasar el mouse o tocar ================= */
+
+      const tip = $("tooltip");
+
+      function contenidoTip(el) {
+        if (el.dataset.visita) {
+          const [k, idx] = el.dataset.visita.split("|");
+          const v = D.mercs.get(k).visitas[+idx];
+          if (!v.respondio) {
+            return `<strong>${fechaLarga(v.fecha)}${v.hora ? ", " + v.hora : ""}</strong><span>${esc(v.pdv)}</span>
+              <span>${v.permiso ? esc(v.detallePermiso || "Con permiso") : v.visito ? "Visitó la sala pero no respondió el formulario" : "No visitó la sala"}</span>`;
+          }
+          const lista = D.cats.map((c, j) => `<span class="tip-fila"><span>${esc(c.nombre)}</span><b class="${v.resp[j] === 1 ? "tip-si" : "tip-no"}">${v.resp[j] === 1 ? "Sí" : v.resp[j] === 0 ? "No" : "Sin información"}</b></span>`).join("");
+          return `<strong>${fechaLarga(v.fecha)}${v.hora ? ", " + v.hora : ""}</strong><span>${esc(v.pdv)}</span>${lista}
+            ${v.igual ? '<span class="tip-ayuda">Mismas respuestas que la visita anterior a esta sala</span>' : ""}`;
+        }
+        if (el.dataset.m) {
+          const m = D.mercs.get(el.dataset.m), c = m.cat[+el.dataset.c];
+          return `<strong>${esc(D.cats[+el.dataset.c].nombre)}</strong><span>${esc(m.nombre)}</span>
+            <span>Respondió “Sí” en ${c.si} de ${c.n} formularios</span>`;
+        }
+        if (el.dataset.tip) {
+          const [cat, pdv, si, n] = el.dataset.tip.split("|");
+          return `<strong>${esc(cat)}</strong><span>${esc(pdv)}</span><span>Respondió “Sí” en ${si} de ${n} formularios</span>`;
+        }
+        if (el.dataset.rep) {
+          const m = D.mercs.get(el.dataset.rep);
+          return `<strong>Igual a la visita anterior</strong><span>${m.iguales} de ${m.comparadas} formularios repiten exactamente las respuestas de su visita anterior a la misma sala.</span>`;
+        }
+        return "";
+      }
+
+      function mostrarTip(el) {
+        const html = contenidoTip(el);
+        if (!html) { tip.hidden = true; return; }
+        tip.innerHTML = html; tip.hidden = false;
+        const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+        const x = Math.max(8, Math.min(r.left + r.width / 2 - w / 2, innerWidth - w - 8));
+        let y = r.bottom + 8;
+        if (y + h > innerHeight - 8) y = r.top - h - 8;
+        tip.style.left = x + "px"; tip.style.top = y + "px";
+      }
+
+      const conTip = "[data-visita], [data-m], [data-tip], [data-rep]";
+      document.querySelectorAll(".calor").forEach((t) => {
+        t.addEventListener("pointerover", (e) => {
+          if (e.pointerType !== "mouse") return;
+          const el = e.target.closest(conTip);
+          if (el) mostrarTip(el); else tip.hidden = true;
+        });
+        t.addEventListener("pointerleave", () => { tip.hidden = true; });
+        t.addEventListener("click", (e) => { const el = e.target.closest(conTip); if (el) mostrarTip(el); });
+      });
+      document.querySelectorAll(".calor-envoltura").forEach((c) => c.addEventListener("scroll", () => { tip.hidden = true; }, { passive: true }));
+      window.addEventListener("scroll", () => { tip.hidden = true; }, { passive: true });
+
+      /* ================= Buscador de mercaderista ================= */
+
+      const input = $("buscaMerc"), lista = $("sugerencias");
+      let coincidencias = [], activa = -1;
+
+      function buscar() {
+        const q = clave(input.value);
+        if (!q) { cerrarLista(); return; }
+        coincidencias = [...D.mercs.values()].filter((m) => m.clave.includes(q) || clave(m.supervisor).includes(q))
+          .sort((a, b) => a.nombre.localeCompare(b.nombre, "es")).slice(0, 8);
+        activa = coincidencias.length ? 0 : -1;
+        pintarSugerencias();
+      }
+      function pintarSugerencias() {
+        lista.innerHTML = coincidencias.length
+          ? coincidencias.map((m, i) => `
+              <li role="option" id="opcion-${i}" data-i="${i}" aria-selected="${i === activa}">
+                <span class="combo__nombre">${esc(m.nombre)}</span>
+                <span class="combo__detalle"><span class="etiqueta-cadena">${esc(m.supervisor)}</span> ${plural(m.respondidas.length, "formulario", "formularios")}</span>
+              </li>`).join("")
+          : `<li class="combo__vacio">No hay mercaderistas con ese nombre.</li>`;
+        lista.hidden = false;
+        input.setAttribute("aria-expanded", "true");
+        if (activa >= 0) input.setAttribute("aria-activedescendant", "opcion-" + activa); else input.removeAttribute("aria-activedescendant");
+      }
+      function cerrarLista() { lista.hidden = true; input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); }
+      function elegir(i) {
+        const m = coincidencias[i]; if (!m) return;
+        input.value = ""; cerrarLista(); input.blur();
+        irA(hashMerc(m));
+        $("migas").scrollIntoView({ behavior: suave(), block: "start" });
+      }
+      input.addEventListener("input", buscar);
+      input.addEventListener("keydown", (e) => {
+        if (lista.hidden && e.key !== "ArrowDown") return;
+        if (e.key === "ArrowDown") { e.preventDefault(); if (lista.hidden) { buscar(); return; } activa = Math.min(activa + 1, coincidencias.length - 1); pintarSugerencias(); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); activa = Math.max(activa - 1, 0); pintarSugerencias(); }
+        else if (e.key === "Enter") { e.preventDefault(); elegir(activa); }
+        else if (e.key === "Escape") cerrarLista();
+      });
+      lista.addEventListener("mousedown", (e) => e.preventDefault());
+      lista.addEventListener("click", (e) => { const li = e.target.closest("li[data-i]"); if (li) elegir(+li.dataset.i); });
+      input.addEventListener("blur", cerrarLista);
+
+      cargar();
+    })();
+  </script>
+</body>
+</html>
