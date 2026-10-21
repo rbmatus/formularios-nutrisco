@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Surtido canal tradicional</title>
+  <title>Matriz de productos canal tradicional</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,19 +15,18 @@
     <div class="contenedor">
       <nav class="menu" aria-label="Secciones del sitio">
         <a href="index.html">Formularios pendientes</a>
-        <a href="surtido.html" aria-current="page">Surtido canal tradicional</a>
+        <a href="surtido.html" aria-current="page">Matriz de productos</a>
       </nav>
       <p class="cabecera__cliente">Cliente Nutrisco <span id="nota">Cargando datos…</span></p>
-      <h1 class="cabecera__titulo">Surtido canal tradicional</h1>
+      <h1 class="cabecera__titulo">Matriz de productos<br>canal tradicional</h1>
       <svg class="pincelada" viewBox="0 0 420 26" preserveAspectRatio="none" aria-hidden="true">
         <path d="M4 16 C 60 6, 130 4, 210 9 S 360 20, 416 8 L 414 15 C 360 26, 290 22, 210 17 S 70 12, 6 22 Z"/>
       </svg>
       <p class="cabecera__frase" id="frase"></p>
-      <dl class="resumen resumen--4">
+      <dl class="resumen">
         <div><dt>Salas</dt><dd id="kSalas">–</dd></div>
-        <div><dt>Productos</dt><dd id="kProductos">–</dd></div>
-        <div><dt>Surtidos</dt><dd id="kSurtidos">–</dd></div>
-        <div><dt>Asignaciones</dt><dd id="kAsignaciones">–</dd></div>
+        <div><dt>Cadenas</dt><dd id="kCadenas">–</dd></div>
+        <div><dt>Productos medidos</dt><dd id="kProductos">–</dd></div>
       </dl>
     </div>
   </header>
@@ -43,103 +42,133 @@
       </label>
     </section>
 
-    <!-- ===== Ficha de la sala ===== -->
-    <section class="bloque" id="ficha" aria-labelledby="salaNombre" hidden>
+    <div id="app" hidden>
 
-      <div class="selector">
-        <button type="button" class="selector__flecha" id="btnAnterior" aria-label="Sala anterior">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-        </button>
+      <!-- Barra: modo + buscador directo -->
+      <div class="barra-sala">
+        <div class="segmentos" role="group" aria-label="Tipo de vista">
+          <button type="button" id="modoSala" aria-pressed="true">Por sala</button>
+          <button type="button" id="modoGeneral" aria-pressed="false">Vista general</button>
+        </div>
         <div class="combo">
-          <label for="buscaSala" class="visualmente-oculto">Buscar sala por nombre, cadena o Id</label>
-          <input id="buscaSala" type="search" autocomplete="off" placeholder="Busca una sala por nombre, cadena o Id"
+          <label for="buscaSala" class="visualmente-oculto">Buscar sala por nombre o Id</label>
+          <input id="buscaSala" type="search" autocomplete="off" placeholder="Busca tu sala por nombre o Id"
             role="combobox" aria-expanded="false" aria-controls="sugerencias" aria-autocomplete="list">
           <ul id="sugerencias" class="combo__lista" role="listbox" hidden></ul>
         </div>
-        <button type="button" class="selector__flecha" id="btnSiguiente" aria-label="Sala siguiente">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-        </button>
-        <span class="selector__posicion" id="posicion"></span>
       </div>
 
-      <article class="ficha-sala">
-        <div class="ficha-sala__cabeza">
+      <nav class="migas" id="migas" aria-label="Ubicación"></nav>
+
+      <!-- Paso 1: cadenas -->
+      <section class="bloque paso" id="vistaCadenas" aria-labelledby="tituloCadenas" hidden>
+        <div class="bloque__encabezado">
           <div>
-            <p class="ficha-sala__meta">
-              <span class="etiqueta-cadena" id="salaCadena"></span>
-              <span id="salaId"></span>
-            </p>
-            <h2 id="salaNombre"></h2>
-          </div>
-          <button type="button" class="boton boton--contorno" id="btnCopiar">Copiar link de esta sala</button>
-        </div>
-
-        <div class="ficha-sala__datos">
-          <div class="dato">
-            <p><strong id="salaN"></strong> de <span id="salaTotal"></span> productos</p>
-            <span class="dato__barra" aria-hidden="true"><span id="salaBarra"></span></span>
-          </div>
-          <div class="dato">
-            <p><button type="button" class="enlace" id="salaSurtido"></button><span id="salaCompartido"></span></p>
-            <p class="dato__sub" id="salaSurtidoNombre"></p>
+            <h2 id="tituloCadenas">Elige una cadena</h2>
+            <p>Cada ficha muestra cuántas salas tiene la cadena y cuántos productos se miden en ellas.</p>
           </div>
         </div>
+        <div class="cadenas" id="cadenas"></div>
+      </section>
 
-        <div class="familias__barra">
-          <h3>Productos por familia</h3>
-          <label class="casilla">
-            <input type="checkbox" id="ocultarNoMedidos">
-            Ocultar los que no se miden
-          </label>
+      <!-- Paso 2: una cadena -->
+      <section class="bloque paso" id="vistaCadena" aria-labelledby="tituloCadena" hidden>
+        <div class="paso__encabezado">
+          <h2 id="tituloCadena"></h2>
+          <p id="subtituloCadena"></p>
         </div>
-        <p class="familias__ayuda">Pasa el mouse o toca un producto para ver su SKU. Los productos con borde punteado no se miden en esta sala.</p>
-        <div class="familias" id="familias"></div>
-      </article>
-    </section>
-
-    <!-- ===== Vistas secundarias ===== -->
-    <section class="bloque vistas" id="vistas" hidden>
-      <div class="pestanas" role="tablist" aria-label="Otras vistas">
-        <button type="button" role="tab" id="tabSalas" aria-selected="true" aria-controls="panelSalas">Todas las salas</button>
-        <button type="button" role="tab" id="tabMatriz" aria-selected="false" aria-controls="panelMatriz" tabindex="-1">Matriz de surtido</button>
-      </div>
-
-      <div role="tabpanel" id="panelSalas" aria-labelledby="tabSalas">
-        <div class="filtros">
-          <label class="buscador">
-            <span class="visualmente-oculto">Buscar sala</span>
-            <input type="search" id="filtroTexto" placeholder="Buscar sala o Id">
-          </label>
-          <label class="selector-cadena">
-            <span class="visualmente-oculto">Filtrar por cadena</span>
-            <select id="filtroCadena"></select>
-          </label>
-          <span class="filtros__conteo" id="conteoSalas"></span>
+        <div class="cadena-cuerpo">
+          <aside class="lista-salas" aria-labelledby="tituloListaSalas">
+            <h3 id="tituloListaSalas">Elige la sala</h3>
+            <label class="lista-salas__filtro">
+              <span class="visualmente-oculto">Filtrar salas de esta cadena</span>
+              <input type="search" id="filtroSalas" placeholder="Filtrar por nombre o Id">
+            </label>
+            <ol id="listaSalas"></ol>
+          </aside>
+          <div class="panel-productos">
+            <div class="panel-productos__barra">
+              <h3>Productos que se miden en esta cadena</h3>
+              <label class="casilla">
+                <input type="checkbox" class="js-mostrar-no">
+                Mostrar también los que no se miden
+              </label>
+            </div>
+            <div class="familias" id="productosCadena"></div>
+          </div>
         </div>
-        <div class="tabla-envoltura tabla-envoltura--scroll">
-          <table class="tabla tabla--salas">
-            <thead><tr id="cabeceraSalas"></tr></thead>
-            <tbody id="cuerpoSalas"></tbody>
-          </table>
-          <p class="vacio" id="vacioSalas" hidden>Ninguna sala coincide con el filtro.</p>
-        </div>
-      </div>
+      </section>
 
-      <div role="tabpanel" id="panelMatriz" aria-labelledby="tabMatriz" hidden>
-        <p class="matriz__ayuda">Cada columna es un surtido: un grupo de salas que miden exactamente los mismos productos. El punto indica que el producto se mide. La columna resaltada es el surtido de la sala seleccionada; haz clic en un encabezado para abrir una sala de ese surtido.</p>
+      <!-- Paso 3: una sala -->
+      <section class="bloque paso" id="vistaSala" aria-labelledby="salaNombre" hidden>
+        <div class="selector">
+          <button type="button" class="selector__flecha" id="btnAnterior" aria-label="Sala anterior de la cadena">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <span class="selector__posicion" id="posicion"></span>
+          <button type="button" class="selector__flecha" id="btnSiguiente" aria-label="Sala siguiente de la cadena">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <article class="ficha-sala">
+          <div class="ficha-sala__cabeza">
+            <div>
+              <p class="ficha-sala__meta">
+                <span class="etiqueta-cadena" id="salaCadena"></span>
+                <span id="salaId"></span>
+              </p>
+              <h2 id="salaNombre"></h2>
+            </div>
+            <div class="ficha-sala__acciones">
+              <button type="button" class="boton boton--contorno" id="btnCopiarLista">Copiar lista de productos</button>
+              <button type="button" class="boton boton--principal" id="btnCopiar">Copiar link de esta sala</button>
+            </div>
+          </div>
+
+          <div class="ficha-sala__datos">
+            <div class="dato">
+              <p><strong id="salaN"></strong> de <span id="salaTotal"></span> productos se miden en esta sala</p>
+              <span class="dato__barra" aria-hidden="true"><span id="salaBarra"></span></span>
+            </div>
+            <div class="dato">
+              <p id="salaIgual"></p>
+            </div>
+          </div>
+
+          <div class="panel-productos__barra">
+            <h3>Productos que se miden</h3>
+            <label class="casilla">
+              <input type="checkbox" class="js-mostrar-no">
+              Mostrar también los que no se miden
+            </label>
+          </div>
+          <div class="familias" id="productosSala"></div>
+        </article>
+      </section>
+
+      <!-- Vista general -->
+      <section class="bloque paso" id="vistaGeneral" aria-labelledby="tituloGeneral" hidden>
+        <div class="bloque__encabezado">
+          <div>
+            <h2 id="tituloGeneral">Qué se mide en cada cadena</h2>
+            <p>Cada columna es una cadena y cada fila un producto. El punto indica que el producto se mide en las salas de esa cadena. Haz clic en el nombre de una cadena para ver sus salas.</p>
+          </div>
+        </div>
         <div class="matriz-envoltura">
           <table class="matriz" id="matriz"></table>
         </div>
-      </div>
-    </section>
+      </section>
 
+    </div>
   </main>
 
   <footer class="pie contenedor">
-    <p>Para compartir una sala, ábrela y usa “Copiar link de esta sala”. El link abre la página directo en esa sala.</p>
+    <p>Para enviar una sala a un mercaderista o supervisor, ábrela y usa “Copiar link de esta sala”. El link abre la página directo en esa sala.</p>
   </footer>
 
   <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+  <div class="aviso-flotante" id="avisoFlotante" role="status" aria-live="polite" hidden></div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
@@ -187,13 +216,15 @@
       const idTexto = (v) => limpiar(v).replace(/\.0+$/, "");
       const normTitulo = (t) => String(t).normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
       const normBusqueda = (t) => String(t).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+      const slug = (t) => normBusqueda(t).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       const miles = (n) => n.toLocaleString("es-CL");
       const plural = (n, uno, varios) => `${miles(n)} ${n === 1 ? uno : varios}`;
       const colorFam = (fam) => `var(--fam-${FAMILIAS.indexOf(fam) + 1})`;
+      const suave = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
 
-      let D = null;            // datos procesados
-      let salaActual = null;
-      let orden = { col: "sala", dir: 1 };
+      let D = null;
+      let mostrarNo = false;
+      const vista = { modo: "cadenas", cadena: null, sala: null };
 
       /* ================= Lectura del Excel ================= */
 
@@ -222,7 +253,6 @@
         });
 
         const salas = new Map(), productos = new Map(), excluidas = new Set();
-        let asignacionesTotal = 0;
 
         asignaciones.forEach((r) => {
           const idL = idTexto(r.IDLOCAL), idE = idTexto(r.IDELEMENTO);
@@ -233,9 +263,8 @@
 
           if (!salas.has(idL)) salas.set(idL, { id: idL, nombre: nombreSala, cadena, productos: new Set() });
           const sala = salas.get(idL);
-          if (sala.productos.has(idE)) return;     // par repetido
+          if (sala.productos.has(idE)) return;
           sala.productos.add(idE);
-          asignacionesTotal++;
 
           if (!productos.has(idE)) {
             const maestro = maestroElementos[idE] || {};
@@ -245,39 +274,37 @@
           productos.get(idE).salas++;
         });
 
-        // Surtidos: salas con exactamente el mismo conjunto de productos
+        // Grupos de salas con exactamente la misma lista de productos
         const grupos = new Map();
         salas.forEach((s) => {
           const clave = [...s.productos].sort().join("|");
-          if (!grupos.has(clave)) grupos.set(clave, { productos: s.productos, salas: [] });
-          grupos.get(clave).salas.push(s);
+          if (!grupos.has(clave)) grupos.set(clave, []);
+          grupos.get(clave).push(s);
+          s.grupo = grupos.get(clave);
         });
-        const surtidos = [...grupos.values()].map((g) => {
-          const cuenta = {};
-          g.salas.forEach((s) => { cuenta[s.cadena] = (cuenta[s.cadena] || 0) + 1; });
-          const cadenas = Object.entries(cuenta).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "es"));
-          const nombre = cadenas.length === 1 ? cadenas[0][0] : `${cadenas[0][0]} y ${cadenas.length - 1} más`;
-          return { productos: g.productos, salas: g.salas, cadenas, nombre };
-        }).sort((a, b) => b.salas.length - a.salas.length || b.productos.size - a.productos.size || a.nombre.localeCompare(b.nombre, "es"));
-        surtidos.forEach((s, i) => { s.numero = i + 1; s.salas.forEach((sala) => { sala.surtido = s; }); });
 
-        // Orden de navegación: por cadena y luego por nombre
-        const listaSalas = [...salas.values()].sort((a, b) =>
-          a.cadena.localeCompare(b.cadena, "es") || a.nombre.localeCompare(b.nombre, "es"));
+        // Cadenas
+        const cadenas = new Map();
+        salas.forEach((s) => {
+          if (!cadenas.has(s.cadena)) cadenas.set(s.cadena, { nombre: s.cadena, slug: slug(s.cadena), salas: [], conteo: new Map() });
+          const c = cadenas.get(s.cadena);
+          c.salas.push(s);
+          s.productos.forEach((p) => c.conteo.set(p, (c.conteo.get(p) || 0) + 1));
+        });
+        const listaCadenas = [...cadenas.values()].map((c) => {
+          c.salas.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+          c.uniforme = new Set(c.salas.map((s) => s.grupo)).size === 1;
+          return c;
+        }).sort((a, b) =>
+          (a.nombre === SIN_CADENA) - (b.nombre === SIN_CADENA) ||   // "Independiente" al final
+          b.salas.length - a.salas.length || a.nombre.localeCompare(b.nombre, "es"));
 
-        // Familias presentes y productos por familia
         const familias = FAMILIAS.map((f) => ({
           nombre: f,
           productos: [...productos.values()].filter((p) => p.familia === f).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"))
         })).filter((f) => f.productos.length);
 
-        // ¿Cada cadena tiene un solo surtido?
-        const surtidosPorCadena = {};
-        listaSalas.forEach((s) => { (surtidosPorCadena[s.cadena] = surtidosPorCadena[s.cadena] || new Set()).add(s.surtido.numero); });
-        const cadenasMixtas = Object.values(surtidosPorCadena).filter((set) => set.size > 1).length;
-
-        return { salas, listaSalas, productos, surtidos, familias, asignacionesTotal, excluidas: excluidas.size, cadenasMixtas,
-                 cadenas: Object.keys(surtidosPorCadena).sort((a, b) => a.localeCompare(b, "es")) };
+        return { salas, productos, familias, cadenas, listaCadenas, excluidas: excluidas.size };
       }
 
       function cargar() {
@@ -293,12 +320,11 @@
         try { D = procesar(buffer); }
         catch (e) { mostrarAviso(e.message); return; }
         $("aviso").hidden = true;
-        $("ficha").hidden = false;
-        $("vistas").hidden = false;
+        $("app").hidden = false;
         pintarResumen();
-        prepararTabla();
+        pintarCadenas();
         pintarMatriz();
-        abrirDesdeHash();
+        leerHash();
       }
 
       function mostrarAviso(texto) {
@@ -315,120 +341,240 @@
       /* ================= Encabezado ================= */
 
       function pintarResumen() {
-        $("kSalas").textContent = miles(D.listaSalas.length);
+        $("kSalas").textContent = miles(D.salas.size);
+        $("kCadenas").textContent = miles(D.listaCadenas.length);
         $("kProductos").textContent = miles(D.productos.size);
-        $("kSurtidos").textContent = miles(D.surtidos.length);
-        $("kAsignaciones").textContent = miles(D.asignacionesTotal);
         $("nota").textContent = D.excluidas
           ? `Sin las ${plural(D.excluidas, "sala", "salas")} ${CADENAS_EXCLUIDAS.join(", ")}`
           : "Todas las salas";
-        $("frase").textContent = D.cadenasMixtas === 0
-          ? "Todas las salas de una misma cadena miden exactamente lo mismo."
-          : `En ${plural(D.cadenasMixtas, "cadena", "cadenas")} hay salas que miden productos distintos entre sí.`;
+        const mixtas = D.listaCadenas.filter((c) => !c.uniforme).length;
+        $("frase").textContent = mixtas === 0
+          ? "Todas las salas de una misma cadena miden exactamente los mismos productos."
+          : `En ${plural(mixtas, "cadena", "cadenas")} hay salas que miden productos distintos entre sí.`;
       }
 
-      /* ================= Ficha de la sala ================= */
+      /* ================= Navegación (el link de la página guarda dónde estás) ================= */
 
-      function abrirDesdeHash() {
-        const m = location.hash.match(/^#sala-(.+)$/);
-        const id = m ? decodeURIComponent(m[1]) : null;
-        const sala = (id && D.salas.get(id)) || D.listaSalas[0];
-        pintarSala(sala);
+      function irA(hash, desplazar) {
+        if (location.hash !== hash) location.hash = hash;
+        else leerHash();
+        if (desplazar) $("migas").scrollIntoView({ behavior: suave(), block: "start" });
+      }
+      const hashSala = (s) => "#sala-" + encodeURIComponent(s.id);
+      const hashCadena = (c) => "#cadena-" + c.slug;
+
+      function leerHash() {
+        const h = decodeURIComponent(location.hash.slice(1));
+        const previa = { sala: vista.sala, cadena: vista.cadena };   // para resaltarla en la vista general y poder volver
+        vista.sala = null; vista.cadena = null;
+        if (h.startsWith("sala-") && D.salas.get(h.slice(5))) {
+          vista.modo = "sala";
+          vista.sala = D.salas.get(h.slice(5));
+          vista.cadena = D.cadenas.get(vista.sala.cadena);
+        } else if (h.startsWith("cadena-")) {
+          vista.cadena = D.listaCadenas.find((c) => c.slug === h.slice(7)) || null;
+          vista.modo = vista.cadena ? "cadena" : "cadenas";
+        } else if (h === "general") {
+          vista.modo = "general";
+          vista.sala = previa.sala;
+          vista.cadena = previa.cadena;
+        } else {
+          vista.modo = "cadenas";
+        }
+        pintarVista();
+      }
+      // Al cambiar de vista, si el inicio quedó fuera de pantalla, subir hasta él
+      window.addEventListener("hashchange", () => {
+        if (!D) return;
+        leerHash();
+        if ($("migas").getBoundingClientRect().top < 0) $("migas").scrollIntoView({ behavior: suave(), block: "start" });
+      });
+
+      function pintarVista() {
+        const general = vista.modo === "general";
+        $("vistaCadenas").hidden = vista.modo !== "cadenas";
+        $("vistaCadena").hidden = vista.modo !== "cadena";
+        $("vistaSala").hidden = vista.modo !== "sala";
+        $("vistaGeneral").hidden = !general;
+        $("modoSala").setAttribute("aria-pressed", !general);
+        $("modoGeneral").setAttribute("aria-pressed", general);
+
+        // Migas de pan
+        const partes = [];
+        if (general) partes.push(`<span aria-current="page">Vista general</span>`);
+        else {
+          partes.push(vista.modo === "cadenas"
+            ? `<span aria-current="page">Todas las cadenas</span>`
+            : `<a href="#">Todas las cadenas</a>`);
+          if (vista.cadena) partes.push(vista.modo === "cadena"
+            ? `<span aria-current="page">${esc(vista.cadena.nombre)}</span>`
+            : `<a href="${hashCadena(vista.cadena)}">${esc(vista.cadena.nombre)}</a>`);
+          if (vista.sala) partes.push(`<span aria-current="page">Sala Id ${esc(vista.sala.id)}</span>`);
+        }
+        $("migas").innerHTML = partes.join('<span class="migas__sep" aria-hidden="true">›</span>');
+
+        if (vista.modo === "cadena") pintarCadena();
+        if (vista.modo === "sala") pintarSala();
+        if (general) marcarColumnaMatriz();
+
+        document.title = vista.sala ? `${vista.sala.nombre} – Matriz de productos`
+          : vista.cadena ? `${vista.cadena.nombre} – Matriz de productos` : "Matriz de productos canal tradicional";
       }
 
-      function irASala(sala, desplazar) {
-        if (!sala) return;
-        const hash = "#sala-" + encodeURIComponent(sala.id);
-        if (location.hash !== hash) location.hash = hash;   // dispara hashchange → pintarSala
-        else pintarSala(sala);
-        if (desplazar) $("ficha").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-      }
+      $("modoSala").addEventListener("click", () => irA(vista.sala ? hashSala(vista.sala) : vista.cadena ? hashCadena(vista.cadena) : "#"));
+      $("modoGeneral").addEventListener("click", () => irA("#general"));
 
-      window.addEventListener("hashchange", () => { if (D) abrirDesdeHash(); });
+      /* ================= Listas de productos por familia ================= */
 
-      function pintarSala(sala) {
-        salaActual = sala;
-        const i = D.listaSalas.indexOf(sala);
-        const s = sala.surtido;
-        const otras = s.salas.length - 1;
-
-        $("posicion").textContent = `Sala ${i + 1} de ${D.listaSalas.length}`;
-        $("salaCadena").textContent = sala.cadena;
-        $("salaId").textContent = `Id ${sala.id}`;
-        $("salaNombre").textContent = sala.nombre;
-        $("salaN").textContent = sala.productos.size;
-        $("salaTotal").textContent = D.productos.size;
-        $("salaBarra").style.width = (sala.productos.size / D.productos.size) * 100 + "%";
-        $("salaSurtido").textContent = `Surtido ${s.numero}`;
-        $("salaCompartido").textContent = otras
-          ? `, compartido con ${plural(otras, "sala más", "salas más")}`
-          : ", solo lo tiene esta sala";
-        $("salaSurtidoNombre").textContent = s.nombre;
-        document.title = `${sala.nombre} – Surtido canal tradicional`;
-
-        $("familias").innerHTML = D.familias.map((f) => {
-          const medidos = f.productos.filter((p) => sala.productos.has(p.id)).length;
-          const chips = f.productos.map((p) => {
-            const mide = sala.productos.has(p.id);
-            return `<button type="button" class="chip${mide ? "" : " chip--no"}" data-sku="SKU ${esc(p.sku || "sin código")}">
-                ${esc(p.nombre)}<span class="visualmente-oculto">, SKU ${esc(p.sku || "sin código")}${mide ? "" : ", no se mide"}</span>
-              </button>`;
-          }).join("");
+      // estado(p) → { mide: boolean, nota: texto opcional }
+      function htmlFamilias(estado) {
+        return D.familias.map((f) => {
+          const items = f.productos.map((p) => ({ p, ...estado(p) }));
+          const medidos = items.filter((i) => i.mide).length;
+          const visibles = mostrarNo ? items : items.filter((i) => i.mide);
+          const lista = visibles.map(({ p, mide, nota }) => `
+            <li class="producto${mide ? "" : " producto--no"}">
+              <span class="producto__nombre">${esc(p.nombre)}</span>
+              <span class="producto__sku">SKU ${esc(p.sku || "sin código")}</span>
+              ${nota ? `<span class="producto__nota">${esc(nota)}</span>` : ""}
+            </li>`).join("");
           return `
             <section class="familia${medidos ? "" : " familia--vacia"}" style="--fam:${colorFam(f.nombre)}">
-              <h4 class="familia__titulo"><span class="familia__punto" aria-hidden="true"></span>${esc(f.nombre)}
-                <span class="familia__cuenta">${medidos} de ${f.productos.length}</span></h4>
-              <div class="familia__chips">${chips}</div>
-              ${medidos ? "" : '<p class="familia__nada">No se mide ningún producto de esta familia.</p>'}
+              <h4 class="familia__titulo">
+                <span class="familia__punto" aria-hidden="true"></span>${esc(f.nombre)}
+                <span class="familia__cuenta">${medidos} de ${f.productos.length}</span>
+              </h4>
+              ${visibles.length ? `<ul class="productos">${lista}</ul>` : '<p class="familia__nada">No se mide ningún producto de esta familia.</p>'}
             </section>`;
         }).join("");
-
-        // Resaltar en tabla y matriz
-        document.querySelectorAll("#cuerpoSalas tr").forEach((tr) => tr.classList.toggle("activa", tr.dataset.id === sala.id));
-        document.querySelectorAll("#matriz .activa").forEach((el) => el.classList.remove("activa"));
-        document.querySelectorAll(`#matriz [data-s="${s.numero}"]`).forEach((el) => el.classList.add("activa"));
       }
 
-      $("btnAnterior").addEventListener("click", () => {
-        const i = D.listaSalas.indexOf(salaActual);
-        irASala(D.listaSalas[(i - 1 + D.listaSalas.length) % D.listaSalas.length]);
-      });
-      $("btnSiguiente").addEventListener("click", () => {
-        const i = D.listaSalas.indexOf(salaActual);
-        irASala(D.listaSalas[(i + 1) % D.listaSalas.length]);
-      });
+      document.querySelectorAll(".js-mostrar-no").forEach((caja) => caja.addEventListener("change", (e) => {
+        mostrarNo = e.target.checked;
+        document.querySelectorAll(".js-mostrar-no").forEach((c) => { c.checked = mostrarNo; });
+        pintarVista();
+      }));
 
-      $("ocultarNoMedidos").addEventListener("change", (e) => $("familias").classList.toggle("familias--ocultar", e.target.checked));
+      /* ================= Paso 1: cadenas ================= */
 
-      // SKU al tocar (en celular no hay "pasar el mouse")
-      $("familias").addEventListener("click", (e) => {
-        const chip = e.target.closest(".chip");
-        document.querySelectorAll(".chip.abierto").forEach((c) => { if (c !== chip) c.classList.remove("abierto"); });
-        if (chip) chip.classList.toggle("abierto");
-      });
+      function pintarCadenas() {
+        const total = D.productos.size;
+        $("cadenas").innerHTML = D.listaCadenas.map((c) => {
+          const n = c.conteo.size;
+          return `
+            <a class="ficha ficha--cadena" href="${hashCadena(c)}">
+              <span class="ficha__numero">${c.salas.length}</span>
+              <span class="ficha__nombre">${esc(c.nombre)}</span>
+              <span class="ficha__texto">${c.salas.length === 1 ? "sala" : "salas"}${c.nombre === SIN_CADENA ? ", sin cadena asignada" : ""}</span>
+              <span class="ficha__pie">
+                <span>${n} de ${total} productos</span>
+                <span class="ficha__barra" aria-hidden="true"><span style="width:${(n / total) * 100}%"></span></span>
+              </span>
+            </a>`;
+        }).join("");
+      }
 
-      $("salaSurtido").addEventListener("click", () => {
-        activarPestana("matriz");
-        $("vistas").scrollIntoView({ behavior: "smooth" });
-      });
+      /* ================= Paso 2: una cadena ================= */
 
-      $("btnCopiar").addEventListener("click", () => {
-        const link = location.href.split("#")[0] + "#sala-" + encodeURIComponent(salaActual.id);
-        const listo = () => {
-          $("btnCopiar").textContent = "Link copiado";
-          setTimeout(() => { $("btnCopiar").textContent = "Copiar link de esta sala"; }, 2000);
-        };
-        (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject())
+      function pintarCadena() {
+        const c = vista.cadena;
+        $("tituloCadena").textContent = c.nombre;
+        $("subtituloCadena").textContent = c.uniforme
+          ? (c.salas.length === 1
+              ? `1 sala, que mide ${plural(c.conteo.size, "producto", "productos")}.`
+              : `${c.salas.length} salas. Todas miden los mismos ${plural(c.conteo.size, "producto", "productos")}.`)
+          : `${c.salas.length} salas. No todas miden lo mismo: al lado de cada producto se indica en cuántas salas se mide.`;
+        $("filtroSalas").value = "";
+        $("filtroSalas").closest("label").hidden = c.salas.length < 8;
+        pintarListaSalas();
+        $("productosCadena").innerHTML = htmlFamilias((p) => {
+          const n = c.conteo.get(p.id) || 0;
+          return { mide: n > 0, nota: n > 0 && n < c.salas.length ? `En ${n} de ${c.salas.length} salas` : n ? "" : "No se mide" };
+        });
+      }
+
+      function pintarListaSalas() {
+        const c = vista.cadena;
+        const q = normBusqueda($("filtroSalas").value.trim());
+        const salas = c.salas.filter((s) => !q || normBusqueda(s.nombre + " " + s.id).includes(q));
+        $("listaSalas").innerHTML = salas.length
+          ? salas.map((s) => `
+              <li><a href="${hashSala(s)}">
+                <span class="lista-salas__nombre">${esc(s.nombre)}</span>
+                <span class="lista-salas__id">Id ${esc(s.id)}</span>
+              </a></li>`).join("")
+          : `<li class="lista-salas__vacio">Ninguna sala coincide.</li>`;
+      }
+      $("filtroSalas").addEventListener("input", pintarListaSalas);
+
+      /* ================= Paso 3: una sala ================= */
+
+      function pintarSala() {
+        const s = vista.sala, c = vista.cadena;
+        const i = c.salas.indexOf(s);
+        $("posicion").textContent = `Sala ${i + 1} de ${c.salas.length} en ${c.nombre}`;
+        $("btnAnterior").disabled = $("btnSiguiente").disabled = c.salas.length < 2;
+        $("salaCadena").textContent = s.cadena;
+        $("salaId").textContent = `Id ${s.id}`;
+        $("salaNombre").textContent = s.nombre;
+        $("salaN").textContent = s.productos.size;
+        $("salaTotal").textContent = D.productos.size;
+        $("salaBarra").style.width = (s.productos.size / D.productos.size) * 100 + "%";
+
+        // ¿Con qué otras salas comparte exactamente la misma lista?
+        const otras = s.grupo.filter((x) => x !== s);
+        const porCadena = {};
+        otras.forEach((x) => { porCadena[x.cadena] = (porCadena[x.cadena] || 0) + 1; });
+        const cadenasOtras = Object.entries(porCadena).sort((a, b) => b[1] - a[1]);
+        $("salaIgual").textContent = !otras.length
+          ? "Es la única sala con esta lista de productos."
+          : cadenasOtras.length === 1 && cadenasOtras[0][0] === s.cadena
+            ? `Mide lo mismo que ${otras.length === 1 ? "la otra sala" : `las otras ${otras.length} salas`} ${s.cadena}.`
+            : `Mide lo mismo que otras ${plural(otras.length, "sala", "salas")}: ${cadenasOtras.map(([cad, n]) => `${n} ${cad}`).join(", ")}.`;
+
+        $("productosSala").innerHTML = htmlFamilias((p) => ({ mide: s.productos.has(p.id), nota: s.productos.has(p.id) ? "" : "No se mide" }));
+      }
+
+      function moverSala(paso) {
+        const c = vista.cadena, i = c.salas.indexOf(vista.sala);
+        irA(hashSala(c.salas[(i + paso + c.salas.length) % c.salas.length]));
+      }
+      $("btnAnterior").addEventListener("click", () => moverSala(-1));
+      $("btnSiguiente").addEventListener("click", () => moverSala(1));
+
+      function avisar(texto) {
+        const a = $("avisoFlotante");
+        a.textContent = texto; a.hidden = false;
+        clearTimeout(avisar.t);
+        avisar.t = setTimeout(() => { a.hidden = true; }, 2200);
+      }
+
+      function copiar(texto, mensaje) {
+        const listo = () => avisar(mensaje);
+        (navigator.clipboard ? navigator.clipboard.writeText(texto) : Promise.reject())
           .then(listo)
           .catch(() => {
             const campo = document.createElement("textarea");
-            campo.value = link; document.body.appendChild(campo); campo.select();
-            try { document.execCommand("copy"); listo(); } catch (e) { prompt("Copia este link:", link); }
+            campo.value = texto; document.body.appendChild(campo); campo.select();
+            try { document.execCommand("copy"); listo(); } catch (e) { prompt("Copia este texto:", texto); }
             campo.remove();
           });
+      }
+
+      $("btnCopiar").addEventListener("click", () =>
+        copiar(location.href.split("#")[0] + hashSala(vista.sala), "Link copiado. Pégalo en WhatsApp o en un correo."));
+
+      $("btnCopiarLista").addEventListener("click", () => {
+        const s = vista.sala;
+        const bloques = D.familias.map((f) => {
+          const ps = f.productos.filter((p) => s.productos.has(p.id));
+          return ps.length ? `${f.nombre} (${ps.length})\n` + ps.map((p) => `- ${p.nombre} (SKU ${p.sku || "sin código"})`).join("\n") : "";
+        }).filter(Boolean);
+        copiar(`Productos que se miden en ${s.nombre} (Id ${s.id})\n${s.productos.size} productos\n\n${bloques.join("\n\n")}`,
+          "Lista copiada. Pégala en WhatsApp o en un correo.");
       });
 
-      /* ---------- Buscador con autocompletado ---------- */
+      /* ================= Buscador directo de sala ================= */
 
       const input = $("buscaSala"), lista = $("sugerencias");
       let coincidencias = [], activa = -1;
@@ -436,19 +582,22 @@
       function buscar() {
         const q = normBusqueda(input.value.trim());
         if (!q) { cerrarLista(); return; }
-        coincidencias = D.listaSalas.filter((s) => normBusqueda(`${s.nombre} ${s.cadena} ${s.id}`).includes(q)).slice(0, 8);
+        coincidencias = [...D.salas.values()]
+          .filter((s) => normBusqueda(`${s.nombre} ${s.cadena} ${s.id}`).includes(q))
+          .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"))
+          .slice(0, 8);
         activa = coincidencias.length ? 0 : -1;
-        pintarLista();
+        pintarSugerencias();
       }
 
-      function pintarLista() {
+      function pintarSugerencias() {
         lista.innerHTML = coincidencias.length
           ? coincidencias.map((s, i) => `
               <li role="option" id="opcion-${i}" data-i="${i}" aria-selected="${i === activa}">
                 <span class="combo__nombre">${esc(s.nombre)}</span>
                 <span class="combo__detalle"><span class="etiqueta-cadena">${esc(s.cadena)}</span> Id ${esc(s.id)}</span>
               </li>`).join("")
-          : `<li class="combo__vacio">No hay salas con ese nombre, cadena o Id.</li>`;
+          : `<li class="combo__vacio">No hay salas con ese nombre o Id.</li>`;
         lista.hidden = false;
         input.setAttribute("aria-expanded", "true");
         if (activa >= 0) input.setAttribute("aria-activedescendant", "opcion-" + activa);
@@ -462,135 +611,36 @@
       }
 
       function elegir(i) {
-        const sala = coincidencias[i];
-        if (!sala) return;
+        const s = coincidencias[i];
+        if (!s) return;
         input.value = "";
         cerrarLista();
         input.blur();
-        irASala(sala);
+        irA(hashSala(s), true);
       }
 
       input.addEventListener("input", buscar);
       input.addEventListener("keydown", (e) => {
         if (lista.hidden && e.key !== "ArrowDown") return;
-        if (e.key === "ArrowDown") { e.preventDefault(); if (lista.hidden) { buscar(); return; } activa = Math.min(activa + 1, coincidencias.length - 1); pintarLista(); }
-        else if (e.key === "ArrowUp") { e.preventDefault(); activa = Math.max(activa - 1, 0); pintarLista(); }
+        if (e.key === "ArrowDown") { e.preventDefault(); if (lista.hidden) { buscar(); return; } activa = Math.min(activa + 1, coincidencias.length - 1); pintarSugerencias(); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); activa = Math.max(activa - 1, 0); pintarSugerencias(); }
         else if (e.key === "Enter") { e.preventDefault(); elegir(activa); }
         else if (e.key === "Escape") { cerrarLista(); }
       });
-      lista.addEventListener("mousedown", (e) => e.preventDefault());   // no perder el foco al hacer clic
+      lista.addEventListener("mousedown", (e) => e.preventDefault());
       lista.addEventListener("click", (e) => { const li = e.target.closest("li[data-i]"); if (li) elegir(+li.dataset.i); });
       input.addEventListener("blur", cerrarLista);
 
-      /* ================= Pestañas ================= */
-
-      function activarPestana(cual) {
-        const salasActiva = cual === "salas";
-        $("tabSalas").setAttribute("aria-selected", salasActiva);
-        $("tabMatriz").setAttribute("aria-selected", !salasActiva);
-        $("tabSalas").tabIndex = salasActiva ? 0 : -1;
-        $("tabMatriz").tabIndex = salasActiva ? -1 : 0;
-        $("panelSalas").hidden = !salasActiva;
-        $("panelMatriz").hidden = salasActiva;
-      }
-      $("tabSalas").addEventListener("click", () => activarPestana("salas"));
-      $("tabMatriz").addEventListener("click", () => activarPestana("matriz"));
-      document.querySelector(".pestanas").addEventListener("keydown", (e) => {
-        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-        const siguiente = $("tabSalas").getAttribute("aria-selected") === "true" ? "matriz" : "salas";
-        activarPestana(siguiente);
-        $(siguiente === "salas" ? "tabSalas" : "tabMatriz").focus();
-      });
-
-      /* ================= Tabla: todas las salas ================= */
-
-      function prepararTabla() {
-        const cuenta = {};
-        D.listaSalas.forEach((s) => { cuenta[s.cadena] = (cuenta[s.cadena] || 0) + 1; });
-        $("filtroCadena").innerHTML = `<option value="">Todas las cadenas</option>` +
-          D.cadenas.map((c) => `<option value="${esc(c)}">${esc(c)} (${cuenta[c]})</option>`).join("");
-
-        const columnas = [
-          { col: "sala", texto: "Sala" },
-          { col: "cadena", texto: "Cadena" },
-          { col: "productos", texto: "Productos" },
-          ...D.familias.map((f, i) => ({ col: "f" + i, texto: f.nombre, fam: f }))
-        ];
-        $("cabeceraSalas").innerHTML = columnas.map((c) => `
-          <th scope="col" class="${c.fam ? "col-fam" : "col-" + c.col}" data-col="${c.col}" aria-sort="none">
-            <button type="button">${c.fam ? `<span class="familia__punto" style="--fam:${colorFam(c.fam.nombre)}" aria-hidden="true"></span>` : ""}${esc(c.texto)}<span class="orden" aria-hidden="true"></span></button>
-          </th>`).join("");
-        pintarTabla();
-      }
-
-      function valorOrden(s, col) {
-        if (col === "sala") return s.nombre;
-        if (col === "cadena") return s.cadena + " " + s.nombre;
-        if (col === "productos") return s.productos.size;
-        const f = D.familias[+col.slice(1)];
-        return f.productos.filter((p) => s.productos.has(p.id)).length;
-      }
-
-      function pintarTabla() {
-        const q = normBusqueda($("filtroTexto").value.trim());
-        const cadena = $("filtroCadena").value;
-        const filas = D.listaSalas
-          .filter((s) => (!cadena || s.cadena === cadena) && (!q || normBusqueda(s.nombre + " " + s.id).includes(q)))
-          .sort((a, b) => {
-            const va = valorOrden(a, orden.col), vb = valorOrden(b, orden.col);
-            const r = typeof va === "number" ? va - vb : va.localeCompare(vb, "es");
-            return r * orden.dir || a.nombre.localeCompare(b.nombre, "es");
-          });
-
-        document.querySelectorAll("#cabeceraSalas th").forEach((th) =>
-          th.setAttribute("aria-sort", th.dataset.col === orden.col ? (orden.dir === 1 ? "ascending" : "descending") : "none"));
-
-        const total = D.productos.size;
-        $("cuerpoSalas").innerHTML = filas.map((s) => `
-          <tr data-id="${esc(s.id)}" class="${salaActual === s ? "activa" : ""}">
-            <td class="col-sala"><button type="button" class="enlace-fila">${esc(s.nombre)}</button><span class="col-sala__id">Id ${esc(s.id)}</span></td>
-            <td class="col-cadena"><span class="etiqueta-cadena">${esc(s.cadena)}</span></td>
-            <td class="col-productos">
-              <span class="celda-barra"><span class="celda-barra__n">${s.productos.size}</span>
-                <span class="celda-barra__pista" aria-hidden="true"><span style="width:${(s.productos.size / total) * 100}%"></span></span></span>
-            </td>
-            ${D.familias.map((f) => {
-              const n = f.productos.filter((p) => s.productos.has(p.id)).length;
-              return `<td class="col-fam">${n ? n : '<span class="sin-dato">–</span>'}</td>`;
-            }).join("")}
-          </tr>`).join("");
-
-        $("conteoSalas").textContent = plural(filas.length, "sala", "salas");
-        $("vacioSalas").hidden = filas.length > 0;
-      }
-
-      $("cabeceraSalas").addEventListener("click", (e) => {
-        const th = e.target.closest("th");
-        if (!th) return;
-        const col = th.dataset.col;
-        // números parten de mayor a menor; textos de A a Z
-        orden = orden.col === col ? { col, dir: -orden.dir } : { col, dir: col === "sala" || col === "cadena" ? 1 : -1 };
-        pintarTabla();
-      });
-      $("filtroTexto").addEventListener("input", pintarTabla);
-      $("filtroCadena").addEventListener("change", pintarTabla);
-      $("cuerpoSalas").addEventListener("click", (e) => {
-        const tr = e.target.closest("tr[data-id]");
-        if (tr) irASala(D.salas.get(tr.dataset.id), true);
-      });
-
-      /* ================= Matriz de surtido ================= */
+      /* ================= Vista general: producto × cadena ================= */
 
       function pintarMatriz() {
-        const S = D.surtidos;
+        const C = D.listaCadenas;
         const cabeza = `
           <thead><tr>
             <th scope="col" class="matriz__esquina">Producto</th>
-            ${S.map((s) => `
-              <th scope="col" class="matriz__surtido" data-s="${s.numero}">
-                <button type="button" class="matriz__vertical">
-                  <span class="matriz__num">S${s.numero}</span>${esc(s.nombre)} · ${plural(s.salas.length, "sala", "salas")}
-                </button>
+            ${C.map((c, i) => `
+              <th scope="col" class="matriz__surtido" data-c="${i}">
+                <a class="matriz__vertical" href="${hashCadena(c)}">${esc(c.nombre)} · ${plural(c.salas.length, "sala", "salas")}</a>
               </th>`).join("")}
             <th scope="col" class="matriz__total">Salas que lo miden</th>
           </tr></thead>`;
@@ -598,20 +648,21 @@
         const cuerpo = D.familias.map((f) => `
           <tbody style="--fam:${colorFam(f.nombre)}">
             <tr class="matriz__grupo">
-              <th scope="rowgroup" colspan="${S.length + 2}"><span><span class="familia__punto" aria-hidden="true"></span>${esc(f.nombre)}</span></th>
+              <th scope="rowgroup" colspan="${C.length + 2}"><span><span class="familia__punto" aria-hidden="true"></span>${esc(f.nombre)}</span></th>
             </tr>
             ${f.productos.map((p) => `
               <tr>
                 <th scope="row" class="matriz__producto" data-p="${esc(p.id)}">${esc(p.nombre)}</th>
-                ${S.map((s) => {
-                  const mide = s.productos.has(p.id);
-                  return `<td data-s="${s.numero}" data-p="${esc(p.id)}">${mide
-                    ? '<span class="punto" aria-hidden="true"></span><span class="visualmente-oculto">Se mide</span>'
-                    : '<span class="visualmente-oculto">No se mide</span>'}</td>`;
+                ${C.map((c, i) => {
+                  const n = c.conteo.get(p.id) || 0;
+                  const marca = !n ? '<span class="visualmente-oculto">No se mide</span>'
+                    : n === c.salas.length ? '<span class="punto" aria-hidden="true"></span><span class="visualmente-oculto">Se mide</span>'
+                    : `<span class="punto punto--parcial" aria-hidden="true"></span><span class="visualmente-oculto">En ${n} de ${c.salas.length} salas</span>`;
+                  return `<td data-c="${i}" data-p="${esc(p.id)}">${marca}</td>`;
                 }).join("")}
                 <td class="matriz__cuenta"><span class="matriz__cuenta-in">
                   <span class="matriz__cuenta-n">${p.salas}</span>
-                  <span class="celda-barra__pista" aria-hidden="true"><span style="width:${(p.salas / D.listaSalas.length) * 100}%"></span></span>
+                  <span class="celda-barra__pista" aria-hidden="true"><span style="width:${(p.salas / D.salas.size) * 100}%"></span></span>
                 </span></td>
               </tr>`).join("")}
           </tbody>`).join("");
@@ -619,29 +670,31 @@
         $("matriz").innerHTML = cabeza + cuerpo;
       }
 
+      function marcarColumnaMatriz() {
+        document.querySelectorAll("#matriz .activa").forEach((el) => el.classList.remove("activa"));
+        if (!vista.cadena) return;
+        const i = D.listaCadenas.indexOf(vista.cadena);
+        document.querySelectorAll(`#matriz [data-c="${i}"]`).forEach((el) => el.classList.add("activa"));
+      }
+
       // Detalle al pasar el mouse o tocar
       const tip = $("tooltip");
 
       function contenidoTip(el) {
-        const s = el.dataset.s ? D.surtidos[+el.dataset.s - 1] : null;
+        const c = el.dataset.c != null ? D.listaCadenas[+el.dataset.c] : null;
         const p = el.dataset.p ? D.productos.get(el.dataset.p) : null;
-        if (s && p) {
-          const mide = s.productos.has(p.id);
-          return `<strong>${esc(p.nombre)}</strong>
-            <span>Surtido ${s.numero}: ${esc(s.nombre)}, ${plural(s.salas.length, "sala", "salas")}</span>
-            <span class="${mide ? "tip-si" : "tip-no"}">${mide ? "Se mide" : "No se mide"}</span>`;
+        if (c && p) {
+          const n = c.conteo.get(p.id) || 0;
+          const estado = !n ? ["tip-no", "No se mide"]
+            : n === c.salas.length ? ["tip-si", c.salas.length === 1 ? "Se mide" : "Se mide en todas sus salas"]
+            : ["tip-si", `Se mide en ${n} de ${c.salas.length} salas`];
+          return `<strong>${esc(p.nombre)}</strong><span>${esc(c.nombre)}, ${plural(c.salas.length, "sala", "salas")}</span>
+            <span class="${estado[0]}">${estado[1]}</span>`;
         }
-        if (s) {
-          return `<strong>Surtido ${s.numero}: ${esc(s.nombre)}</strong>
-            <span>${plural(s.salas.length, "sala", "salas")}, ${plural(s.productos.size, "producto", "productos")}</span>
-            <span>${s.cadenas.map(([c, n]) => `${esc(c)} (${n})`).join(", ")}</span>
-            <span class="tip-ayuda">Clic para abrir una sala de este surtido</span>`;
-        }
-        if (p) {
-          return `<strong>${esc(p.nombre)}</strong>
-            <span>SKU ${esc(p.sku || "sin código")}, ${esc(p.familia)}</span>
-            <span>Se mide en ${plural(p.salas, "sala", "salas")} de ${D.listaSalas.length}</span>`;
-        }
+        if (c) return `<strong>${esc(c.nombre)}</strong><span>${plural(c.salas.length, "sala", "salas")}, ${plural(c.conteo.size, "producto", "productos")}</span>
+            <span class="tip-ayuda">Clic para ver sus salas</span>`;
+        if (p) return `<strong>${esc(p.nombre)}</strong><span>SKU ${esc(p.sku || "sin código")}, ${esc(p.familia)}</span>
+            <span>Se mide en ${plural(p.salas, "sala", "salas")} de ${D.salas.size}</span>`;
         return "";
       }
 
@@ -652,8 +705,7 @@
         tip.hidden = false;
         const r = el.getBoundingClientRect();
         const w = tip.offsetWidth, h = tip.offsetHeight;
-        let x = r.left + r.width / 2 - w / 2;
-        x = Math.max(8, Math.min(x, innerWidth - w - 8));
+        const x = Math.max(8, Math.min(r.left + r.width / 2 - w / 2, innerWidth - w - 8));
         let y = r.bottom + 8;
         if (y + h > innerHeight - 8) y = r.top - h - 8;
         tip.style.left = x + "px";
@@ -663,22 +715,16 @@
       const matriz = $("matriz");
       matriz.addEventListener("pointerover", (e) => {
         if (e.pointerType !== "mouse") return;
-        const el = e.target.closest("[data-s], [data-p]");
+        const el = e.target.closest("[data-c], [data-p]");
         if (el) mostrarTip(el); else tip.hidden = true;
       });
       matriz.addEventListener("pointerleave", () => { tip.hidden = true; });
       matriz.addEventListener("click", (e) => {
-        const cabecera = e.target.closest("th[data-s]");
-        if (cabecera) {
-          tip.hidden = true;
-          const s = D.surtidos[+cabecera.dataset.s - 1];
-          irASala(s.salas.includes(salaActual) ? salaActual : s.salas[0], true);
-          return;
-        }
-        const el = e.target.closest("[data-s], [data-p]");
+        if (e.target.closest("a")) { tip.hidden = true; return; }
+        const el = e.target.closest("[data-c], [data-p]");
         if (el) mostrarTip(el);
       });
-      matriz.addEventListener("focusin", (e) => { const el = e.target.closest("[data-s]"); if (el) mostrarTip(el); });
+      matriz.addEventListener("focusin", (e) => { const el = e.target.closest("[data-c]"); if (el) mostrarTip(el); });
       matriz.addEventListener("focusout", () => { tip.hidden = true; });
       document.querySelector(".matriz-envoltura").addEventListener("scroll", () => { tip.hidden = true; }, { passive: true });
       window.addEventListener("scroll", () => { tip.hidden = true; }, { passive: true });
