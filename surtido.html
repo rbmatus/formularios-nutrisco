@@ -6,33 +6,41 @@
   <title>Matriz de productos canal tradicional</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <header class="cabecera">
-    <div class="contenedor">
+  <header class="sitio">
+    <div class="contenedor sitio__barra">
+      <a class="sitio__marca" href="index.html">
+        <span class="sitio__nombre">Panel canal tradicional</span>
+        <span class="sitio__cliente">Cliente Nutrisco</span>
+      </a>
       <nav class="menu" aria-label="Secciones del sitio">
-        <a href="index.html">Formularios pendientes</a>
+        <a href="pendientes.html">Formularios pendientes</a>
         <a href="surtido.html" aria-current="page">Matriz de productos</a>
         <a href="respuestas.html">Respuestas góndola</a>
       </nav>
-      <p class="cabecera__cliente">Cliente Nutrisco <span id="nota">Cargando datos…</span></p>
-      <h1 class="cabecera__titulo">Matriz de productos<br>canal tradicional</h1>
-      <svg class="pincelada" viewBox="0 0 420 26" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M4 16 C 60 6, 130 4, 210 9 S 360 20, 416 8 L 414 15 C 360 26, 290 22, 210 17 S 70 12, 6 22 Z"/>
-      </svg>
-      <p class="cabecera__frase" id="frase"></p>
-      <dl class="resumen">
+    </div>
+  </header>
+
+  <section class="titular">
+    <div class="contenedor">
+      <h1>Matriz de productos canal tradicional</h1>
+      <p class="titular__meta" id="nota">Cargando datos…</p>
+      <p class="titular__desc" id="frase"></p>
+      <dl class="indicadores">
         <div><dt>Salas</dt><dd id="kSalas">–</dd></div>
         <div><dt>Cadenas</dt><dd id="kCadenas">–</dd></div>
         <div><dt>Productos medidos</dt><dd id="kProductos">–</dd></div>
       </dl>
     </div>
-  </header>
+  </section>
 
   <main class="contenedor">
+
+    <div class="cargando" id="cargando" role="status"><span class="cargando__barra" aria-hidden="true"></span>Cargando datos…</div>
 
     <section class="aviso" id="aviso" hidden>
       <h2>No se pudo cargar surtido.xlsx</h2>
@@ -63,7 +71,7 @@
 
       <!-- Paso 1: cadenas -->
       <section class="bloque paso" id="vistaCadenas" aria-labelledby="tituloCadenas" hidden>
-        <div class="bloque__encabezado">
+        <div class="paso__encabezado">
           <div>
             <h2 id="tituloCadenas">Elige una cadena</h2>
             <p>Cada ficha muestra cuántas salas tiene la cadena y cuántos productos se miden en ellas.</p>
@@ -150,7 +158,7 @@
 
       <!-- Vista general -->
       <section class="bloque paso" id="vistaGeneral" aria-labelledby="tituloGeneral" hidden>
-        <div class="bloque__encabezado">
+        <div class="paso__encabezado">
           <div>
             <h2 id="tituloGeneral">Qué se mide en cada cadena</h2>
             <p>Cada columna es una cadena y cada fila un producto. El punto indica que el producto se mide en las salas de esa cadena. Haz clic en el nombre de una cadena para ver sus salas.</p>
@@ -165,6 +173,7 @@
   </main>
 
   <footer class="pie contenedor">
+    <p>Fuente: surtido.xlsx (asignaciones de productos por sala). Se excluyen las salas Alvi. La cadena se deduce del nombre de la sala; las que no calzan con ninguna cadena quedan como Independiente.</p>
     <p>Para enviar una sala a un mercaderista o supervisor, ábrela y usa “Copiar link de esta sala”. El link abre la página directo en esa sala.</p>
   </footer>
 
@@ -172,6 +181,7 @@
   <div class="aviso-flotante" id="avisoFlotante" role="status" aria-live="polite" hidden></div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="comun.js"></script>
   <script>
     /* ===== Configuración ===== */
     const ARCHIVO_DATOS = "surtido.xlsx";
@@ -320,6 +330,7 @@
       function iniciarDesde(buffer) {
         try { D = procesar(buffer); }
         catch (e) { mostrarAviso(e.message); return; }
+        window.Comun.listo();
         $("aviso").hidden = true;
         $("app").hidden = false;
         pintarResumen();
@@ -329,6 +340,7 @@
       }
 
       function mostrarAviso(texto) {
+        window.Comun.listo();
         $("aviso").hidden = false;
         $("avisoTexto").textContent = texto;
         $("nota").textContent = "Sin datos";
@@ -345,13 +357,12 @@
         $("kSalas").textContent = miles(D.salas.size);
         $("kCadenas").textContent = miles(D.listaCadenas.length);
         $("kProductos").textContent = miles(D.productos.size);
-        $("nota").textContent = D.excluidas
-          ? `Sin las ${plural(D.excluidas, "sala", "salas")} ${CADENAS_EXCLUIDAS.join(", ")}`
-          : "Todas las salas";
+        $("nota").innerHTML = "Asignaciones vigentes de productos por sala" + (D.excluidas
+          ? `, <strong>sin las ${plural(D.excluidas, "sala", "salas")} ${CADENAS_EXCLUIDAS.join(", ")}</strong>` : "");
         const mixtas = D.listaCadenas.filter((c) => !c.uniforme).length;
-        $("frase").textContent = mixtas === 0
+        $("frase").textContent = "Qué productos se miden en cada sala. " + (mixtas === 0
           ? "Todas las salas de una misma cadena miden exactamente los mismos productos."
-          : `En ${plural(mixtas, "cadena", "cadenas")} hay salas que miden productos distintos entre sí.`;
+          : `En ${plural(mixtas, "cadena", "cadenas")} hay salas que miden productos distintos entre sí.`);
       }
 
       /* ================= Navegación (el link de la página guarda dónde estás) ================= */
